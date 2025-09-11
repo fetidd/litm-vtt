@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from "react";
 import RollWidgetLog from "./RollWidgetLog";
 import RollWidgetInput from "./RollWidgetInput";
 import type Modifier from "../../litm/modifier";
 import { RollRequest } from "@/messaging/message";
-
-type RollMessage = {
-    id: string;
-    text: string;
-};
+import { useContext } from "react";
+import { UserContext } from "@/App";
 
 type Props = {
     websocket: WebSocket | null,
@@ -18,8 +14,8 @@ type Props = {
 }
 
 export default function RollWidget({ modifiers, rollMessages, handleRemoveModifier, clearModifiers, websocket }: Props) {
+    const user = useContext(UserContext);
     const handleRoll = () => {
-        // Simulate a dice roll and message
         const rolls = [(Math.floor(Math.random() * 6) + 1), (Math.floor(Math.random() * 6) + 1)];
         let total = rolls.reduce((a, b) => a + b, 0);
         let modifierText: string[] = [];
@@ -33,7 +29,7 @@ export default function RollWidget({ modifiers, rollMessages, handleRemoveModifi
                 modifierText.push(`-${mod.entity.value} ${mod.entity.name}`)
             }
         }
-        const message = `Rolled: ${total} (${rolls.join(", ")})${modifierText ? " (" + modifierText.join(", ") + ")" : ""}`;
+        const message = `${user?.username}${user?.role === 'narrator' ? " (Narrator)" : ""} rolled: ${total} (${rolls.join(", ")})${modifierText.length ? " (" + modifierText.join(", ") + ")" : ""}`;
         const rollMessage = new RollRequest(message);
         websocket?.send(JSON.stringify(rollMessage));
         clearModifiers(); // clear modifiers after roll
