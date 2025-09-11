@@ -2,52 +2,41 @@ import React, { useEffect, useState } from "react";
 import RollWidgetLog from "./RollWidgetLog";
 import RollWidgetInput from "./RollWidgetInput";
 import type Modifier from "../../litm/modifier";
-import Entity from "../../litm/entity";
+import { RollRequest } from "@/messaging/message";
 
 type RollMessage = {
-    id: number;
+    id: string;
     text: string;
 };
 
 type Props = {
-    entities: Entity[],
+    websocket: WebSocket | null,
+    rollMessages: { id: string; text: string }[],
+    modifiers: Modifier[],
     handleRemoveModifier: (modId: string) => void;
+    clearModifiers: () => void;
 }
 
-export default function RollWidget({ entities, handleRemoveModifier }: Props) {
-    const [rollMessages, setRollMessages] = useState<RollMessage[]>([]);
-    const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>(entities.map(e => ({
-        entity: e,
-        value: 1,
-        polarity: 'add'
-    })));
-
-    useEffect(() => {
-        setSelectedModifiers(entities.map(e => ({
-            entity: e,
-            value: 1,
-            polarity: 'add'
-        })));
-    }, [entities]);
-
-    const handleRoll = () => { // TODO move to server
+export default function RollWidget({ modifiers, rollMessages, handleRemoveModifier, clearModifiers, websocket }: Props) {
+    const handleRoll = () => {
         // Simulate a dice roll and message
         const rolls = [(Math.floor(Math.random() * 6) + 1), (Math.floor(Math.random() * 6) + 1)];
         let total = rolls.reduce((a, b) => a + b, 0);
-        for (const mod of selectedModifiers) {
+        let modifierText: string[] = [];
+        for (const mod of modifiers) {
             if (mod.polarity === 'add') {
-                total += mod.value;
+                const toAdd = mod.isBurned ? mod.entity.value * 3 : mod.entity.value;
+                total += toAdd;
+                modifierText.push(`+${toAdd} ${mod.entity.name}`)
             } else {
-                total -= mod.value;
+                total -= mod.entity.value;
+                modifierText.push(`-${mod.entity.value} ${mod.entity.name}`)
             }
         }
-        const modifierText = selectedModifiers.map(m => m.entity.name).join(", ");
-        const message = `Rolled: ${total} (${rolls.join(", ")})${modifierText ? " (" + modifierText + ")" : ""}`;
-        setRollMessages([
-            ...rollMessages,
-            { id: Date.now(), text: message }
-        ]);
-        setSelectedModifiers([]); // clear modifiers after roll
+        const message = `Rolled: ${total} (${rolls.join(", ")})${modifierText ? " (" + modifierText.join(", ") + ")" : ""}`;
+        const rollMessage = new RollRequest(message);
+        websocket?.send(JSON.stringify(rollMessage));
+        clearModifiers(); // clear modifiers after roll
     };
 
     return (
@@ -70,7 +59,7 @@ export default function RollWidget({ entities, handleRemoveModifier }: Props) {
         >
             <RollWidgetLog rollMessages={rollMessages} />
             <RollWidgetInput
-                selectedModifiers={selectedModifiers}
+                selectedModifiers={modifiers}
                 onRoll={handleRoll}
                 handleModifierRemove={handleRemoveModifier}
             />

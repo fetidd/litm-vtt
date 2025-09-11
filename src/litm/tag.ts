@@ -1,13 +1,13 @@
-import Entity from "./entity";
+import {ModifierEntity} from "./entity";
 
-export default class Tag extends Entity {
-    name: string;
-    value: number = 1;
-
-    constructor(name: string, value: number = 1) {
+export default class Tag extends ModifierEntity {
+    override canBurn: boolean = true;
+    constructor(
+        public name: string, 
+        public value: number = 1, 
+        public isBurned: boolean = false) 
+    {
         super();
-        this.name = name;
-        this.value = value;
     }
     announceState() {
         console.log(`Tag ${this.name} ${this.id}`);

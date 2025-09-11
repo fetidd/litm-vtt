@@ -1,5 +1,5 @@
 import index from "../index.html";
-import Entity from "../litm/entity";
+import { Entity } from "../litm/entity";
 import Tag from "../litm/tag";
 import { handleMessage } from "./handler";
 
@@ -31,7 +31,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
 
     async open(ws) {
       console.debug(`WebSocket connection opened: ${ws.remoteAddress}`);
-      ws.subscribe("game-table");
+      ["game-table", "rolls"].forEach(x => ws.subscribe(x));
       const syncMessage = {
         type: 'gameTableEntitySync',
         entities: Array.from(entities.values())
@@ -53,13 +53,13 @@ const server = Bun.serve<{ authToken: string }, {}>({
     "/*": index,
 
     "/api/hello": {
-      async GET(req) {
+      async GET(req: any) {
         return Response.json({
           message: "Hello, world!",
           method: "GET",
         });
       },
-      async PUT(req) {
+      async PUT(req: any) {
         return Response.json({
           message: "Hello, world!",
           method: "PUT",
@@ -67,7 +67,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
       },
     },
 
-    "/api/hello/:name": async req => {
+    "/api/hello/:name": async (req: any) => {
       const name = req.params.name;
       return Response.json({
         message: `Hello, ${name}!`,

@@ -26,5 +26,5 @@ export default function RollWidgetLog({rollMessages}: Props) {
 }
 
 type Props = {
-    rollMessages: { id: number; text: string }[];
+    rollMessages: { id: string; text: string }[];
 };

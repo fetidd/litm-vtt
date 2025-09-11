@@ -1,7 +1,7 @@
-import Entity from "./entity";
+import { ModifierEntity } from "./entity";
 
 export default interface Modifier {
-    entity: Entity
-    value: number;
+    entity: ModifierEntity
+    isBurned: boolean
     polarity: 'add' | 'subtract';
 }

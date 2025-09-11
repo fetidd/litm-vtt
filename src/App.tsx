@@ -1,16 +1,19 @@
 import { GameTable } from "./components/game_table/GameTable";
 import "../assets/index.css";
-import { UpdateGameTableEntityPosition } from "./messaging/message";
-import Entity from "./litm/entity";
+import { RollRequest, RollResponse, UpdateGameTableEntityPosition } from "./messaging/message";
+import { Entity, ModifierEntity } from "./litm/entity";
 import { useEffect, useState } from "react";
 import RollWidget from "./components/roll_widget/RollWidget";
+import type Modifier from "./litm/modifier";
 
 type EntityPositionData = { entity: Entity, position: { x: number, y: number } };
 
 export function App() {
   // console.debug("Rendering App component");
   const [gameTableEntities, setGameTableEntities] = useState<EntityPositionData[]>([]);
-  const [selectedEntities, setSelectedEntities] = useState<Entity[]>([]);
+  const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>([]);
+  const [rollMessages, setRollMessages] = useState<{ id: string; text: string }[]>([]);
+
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -41,6 +44,10 @@ export function App() {
             }
           });
           break;
+        case 'rollResponse':
+          const rollMessage = message as RollResponse;
+          setRollMessages(prev => [...prev, {id: rollMessage.id, text: rollMessage.message}])
+          break;
         default:
           console.warn(`Unknown message type: ${message.type}`);
       }
@@ -51,11 +58,21 @@ export function App() {
     };
   }, []);
 
-  const sendEntityPosition = (id: string, x: number, y: number) => {
-    const message = new UpdateGameTableEntityPosition(id, x, y);
-    // console.debug("Sending message:", message);
-    ws!.send(JSON.stringify(message));
-  }
+  const toggleSelectedModifier = (entity: ModifierEntity, polarity: 'add' | 'subtract', isBurned: boolean) => {
+    // console.debug("Toggling selected modifier:", entity);
+    setSelectedModifiers(prev => {
+      if (!prev.find(e => e.entity.id === entity.id)) {
+        return [...prev, { entity, isBurned, polarity }];
+      }
+      return prev;
+    });
+  };
+
+  const removeEntityFromGameTable = (entity: Entity) => {
+    setGameTableEntities(prev => {
+      return [ ...prev.filter(e => e.entity.id != entity.id)];
+    })
+  };
 
   const style: React.CSSProperties = {
     display: "flex",
@@ -65,27 +82,26 @@ export function App() {
     height: "98vh",
     flexGrow: 1,
     margin: "5px"
-    };
+  };
 
   return (
     <div className="app" style={style}>
-      <GameTable 
-        entities={gameTableEntities} 
-        sendEntityPosition={sendEntityPosition}
-        toggleSelectedEntity={(entity: Entity) => {
-          console.debug("Toggling selected entity:", entity);
-          setSelectedEntities(prev => {
-            if (!prev.find(e => e.id === entity.id)) {
-              return [...prev, entity];
-            }
-            return prev.filter(e => e.id !== entity.id);
-          });
-        }}
+      <GameTable
+        websocket={ws}
+        entities={gameTableEntities}
+        addModifier={toggleSelectedModifier}
+        removeEntity={removeEntityFromGameTable}
       />
-      <RollWidget entities={selectedEntities} handleRemoveModifier={(id: string) => {
-        console.debug("Removing modifier:", id);
-        setSelectedEntities(prev => prev.filter(e => e.id !== id));
-      }}/>
+      <RollWidget 
+        websocket={ws}
+        rollMessages={rollMessages}
+        modifiers={selectedModifiers} 
+        handleRemoveModifier={(id: string) => {
+          // console.debug("Removing modifier:", id);
+          setSelectedModifiers(prev => prev.filter(e => e.entity.id !== id));
+        }}
+        clearModifiers={() => setSelectedModifiers([])}
+      />
     </div>
   );
 }

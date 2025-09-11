@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
-import LitmEntity from "../../litm/entity";
+import { Entity } from "../../litm/entity";
 import { PlusIcon } from "@heroicons/react/16/solid";
 import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
 import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 
 type DraggableEntityProps = {
     id: string;
-    entity: LitmEntity;
+    entity: Entity;
     x: number;
     y: number;
     height: number;
