@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import {
     DndContext,
     useDroppable,
-    DragEndEvent,
     useSensor,
     PointerSensor,
 } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import { DraggableEntity } from "./DraggableEntity";
 import Entity from "../../litm/entity";
+import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
+import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 
 type DraggableEntityData = {
     entity: Entity
@@ -79,15 +81,15 @@ export function GameTable({ entities, sendEntityPosition, toggleSelectedEntity }
                 style={{
                     position: "relative",
                     width: "80%",
-                    height: "1000px",
+                    height: "98vh",
                     border: "2px solid #68ff03ff",
                     overflow: "hidden",
-                    margin: "20px",
                     borderRadius: "4px",
                     boxSizing: "border-box",
                 }}
             >
                 {entityPositions.map((entity_data) => (
+                    <ContextMenuWrapper menu={<ModifierContextMenu entity={entity_data.entity}/>}>
                     <DraggableEntity
                         key={entity_data.entity.id}
                         id={entity_data.entity.id}
@@ -95,8 +97,8 @@ export function GameTable({ entities, sendEntityPosition, toggleSelectedEntity }
                         x={entity_data.position.x}
                         y={entity_data.position.y}
                         height={lastMovedEntityId === entity_data.entity.id ? 10 : 2}
-                        handleClick={handleClick}
                     />
+                    </ContextMenuWrapper>
                 ))}
             </div>
         </DndContext>

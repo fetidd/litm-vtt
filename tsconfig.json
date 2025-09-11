@@ -30,8 +30,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-
-    "include": ["./bun-env.d.ts"]
   },
 
   "exclude": ["dist", "node_modules"]

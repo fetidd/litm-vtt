@@ -62,8 +62,9 @@ export function App() {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "start",
-    height: "100vh",
+    height: "98vh",
     flexGrow: 1,
+    margin: "5px"
     };
 
   return (
