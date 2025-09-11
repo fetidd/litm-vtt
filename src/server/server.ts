@@ -1,6 +1,16 @@
-import index from "./index.html";
+import index from "../index.html";
+import Entity from "../litm/entity";
+import Tag from "../litm/tag";
+import { handleMessage } from "./handler";
+
+const entities = new Map<string, { entity: Entity, position: { x: number, y: number } }>();
+const freezingTag = new Tag("Freezing cold");
+const onFireTag = new Tag("On fire!");
+entities.set(freezingTag.id, { entity: freezingTag, position: { x: 15, y: 15 } });
+entities.set(onFireTag.id, { entity: onFireTag, position: { x: 30, y: 67 } });
 
 const server = Bun.serve<{ authToken: string }, {}>({
+  port: 3000,
   fetch(req, server) {
     const success = server.upgrade(req);
     if (success) {
@@ -15,12 +25,29 @@ const server = Bun.serve<{ authToken: string }, {}>({
   websocket: {
     // this is called when a message is received
     async message(ws, message) {
-      console.log(`Received ${message}`);
-      // send back a message
-      ws.send(`You said: ${message}`);
+      // console.debug(`WebSocket message received: ${message}`);
+      handleMessage(ws, message, entities, server);
     },
+
+    async open(ws) {
+      console.debug(`WebSocket connection opened: ${ws.remoteAddress}`);
+      ws.subscribe("game-table");
+      const syncMessage = {
+        type: 'gameTableEntitySync',
+        entities: Array.from(entities.values())
+      };
+      ws.send(JSON.stringify(syncMessage));
+    },
+
+    async close(code, reason) {
+      console.debug(`WebSocket closed: ${code} - ${reason}`);
+    },
+
+    async drain() {
+      console.debug("WebSocket backpressure has drained");
+    }
   },
-  
+
   routes: {
     // Serve index.html for all unmatched routes.
     "/*": index,
