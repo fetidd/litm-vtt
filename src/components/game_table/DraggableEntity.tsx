@@ -1,10 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-
 import { Entity } from "../../litm/entity";
-import { PlusIcon } from "@heroicons/react/16/solid";
-import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
-import ModifierContextMenu from "../context_menu/ModifierContextMenu";
+import { useTransformContext } from "react-zoom-pan-pinch";
 
 type DraggableEntityProps = {
     id: string;
@@ -18,6 +15,9 @@ export function DraggableEntity({ id, entity, x, y, height}: DraggableEntityProp
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
     });
+    const transformContext = useTransformContext();
+    const xOffset = transform == null ? 0 : transform.x / transformContext.transformState.scale;
+    const yOffset = transform == null ? 0 : transform.y / transformContext.transformState.scale;
 
     const style: React.CSSProperties = {
         background: "#fff9a6",
@@ -28,10 +28,10 @@ export function DraggableEntity({ id, entity, x, y, height}: DraggableEntityProp
         // maxWidth: "200px",
         fontSize: "1rem",
         color: "#333",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+        boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.47)",
         position: "absolute",
-        left: x + (transform?.x ?? 0),
-        top: y + (transform?.y ?? 0),
+        left: x + xOffset,
+        top: y + yOffset,
         cursor: "grab",
         userSelect: "none",
         display: "flex",
@@ -41,6 +41,7 @@ export function DraggableEntity({ id, entity, x, y, height}: DraggableEntityProp
 
     return (
         <div 
+            className="draggable-entity"
             ref={setNodeRef} 
             style={style} 
             {...listeners} 

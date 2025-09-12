@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     DndContext,
     useDroppable,
@@ -10,7 +10,8 @@ import { DraggableEntity } from "./DraggableEntity";
 import { Entity, ModifierEntity } from "../../litm/entity";
 import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
 import ModifierContextMenu from "../context_menu/ModifierContextMenu";
-import { UpdateGameTableEntityPosition } from "@/messaging/message";
+import { UpdateGameTableEntityPosition } from "../../messaging/message";
+import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 
 type DraggableEntityData = {
     entity: Entity
@@ -24,8 +25,8 @@ type GameTableProps = {
     removeEntity: (entity: Entity) => void;
 };
 
-export function GameTable({ 
-    entities, 
+export function GameTable({
+    entities,
     addModifier,
     removeEntity,
     websocket
@@ -34,6 +35,7 @@ export function GameTable({
 
     const [entityPositions, setEntityPositions] = useState<DraggableEntityData[]>(entities);
     const [lastMovedEntityId, setLastMovedEntityId] = useState<string | null>(null);
+    const transformContext = useTransformContext();
 
     // console.debug("Entity positions state:", entityPositions);
 
@@ -60,8 +62,8 @@ export function GameTable({
                     ? {
                         ...entity_data,
                         position: {
-                            x: entity_data.position.x + delta.x,
-                            y: entity_data.position.y + delta.y,
+                            x: entity_data.position.x + (delta.x / transformContext.transformState.scale),
+                            y: entity_data.position.y + (delta.y / transformContext.transformState.scale),
                         },
                     }
                     : entity_data
@@ -71,8 +73,8 @@ export function GameTable({
         if (movedEntity) {
             sendEntityPosition(
                 movedEntity.entity.id,
-                movedEntity.position.x + delta.x,
-                movedEntity.position.y + delta.y
+                movedEntity.position.x + (delta.x / transformContext.transformState.scale),
+                movedEntity.position.y + (delta.y / transformContext.transformState.scale)
             );
         }
     };
@@ -85,7 +87,7 @@ export function GameTable({
 
     const getContextMenuForEntity = (entity: Entity) => {
         if (entity.canModify) {
-            return <ModifierContextMenu 
+            return <ModifierContextMenu
                 entity={entity as ModifierEntity}
                 addModifier={addModifier}
                 removeEntity={removeEntity}
@@ -95,6 +97,7 @@ export function GameTable({
     };
 
     return (
+
         <DndContext onDragEnd={handleDragEnd} sensors={[mouseSensor]}>
             <div
                 ref={setNodeRef}
@@ -106,24 +109,41 @@ export function GameTable({
                     overflow: "hidden",
                     borderRadius: "4px",
                     boxSizing: "border-box",
+                    background: "rgba(37, 41, 58, 1)"
                 }}
             >
-                {entityPositions.map((entity_data) => (
-                    <div onMouseDown={() => setLastMovedEntityId(entity_data.entity.id)} key={entity_data.entity.id}>
-                    <ContextMenuWrapper menu={
-                        getContextMenuForEntity(entity_data.entity)
-                    }>
-                    <DraggableEntity
-                        key={entity_data.entity.id}
-                        id={entity_data.entity.id}
-                        entity={entity_data.entity}
-                        x={entity_data.position.x}
-                        y={entity_data.position.y}
-                        height={lastMovedEntityId === entity_data.entity.id ? 10 : 2}
-                    />
-                    </ContextMenuWrapper>
+                <TransformComponent
+                    wrapperStyle={{ border: "2px solid #00ffffff", height: "100%", width: "100%" }}
+                    contentStyle={{ border: "2px solid #ffe711ff", padding: "5px" }}
+                >
+                    <div style={{
+                        height: "1000px",
+                        width: "1000px",
+                        background: "conic-gradient(#dc57af 90deg,#a80f75 90deg 180deg,#dc57af 180deg 270deg,#a80f75 270deg)",
+                        backgroundRepeat: "repeat",
+                        backgroundSize: "60px 60px",
+                        backgroundPosition: "top left",
+                    }}
+                    >
+                        {entityPositions.map((entity_data) => (
+                            <div
+                                key={entity_data.entity.id}
+                                onMouseDown={() => setLastMovedEntityId(entity_data.entity.id)}
+                            >
+                                <ContextMenuWrapper menu={getContextMenuForEntity(entity_data.entity)}>
+                                    <DraggableEntity
+                                        key={entity_data.entity.id}
+                                        id={entity_data.entity.id}
+                                        entity={entity_data.entity}
+                                        x={entity_data.position.x}
+                                        y={entity_data.position.y}
+                                        height={lastMovedEntityId === entity_data.entity.id ? 10 : 2}
+                                    />
+                                </ContextMenuWrapper>
+                            </div>
+                        ))}
                     </div>
-                ))}
+                </TransformComponent>
             </div>
         </DndContext>
     );

@@ -1,5 +1,5 @@
-import Modifier from '../../litm/modifier';
-import Tag from '../../litm/tag';
+import type Modifier from '../../litm/modifier';
+import { Tag } from '../../litm/tag';
 
 export default function RollWidgetInput({
     selectedModifiers,

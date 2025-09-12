@@ -1,6 +1,6 @@
 import index from "../index.html";
 import { Entity } from "../litm/entity";
-import Tag from "../litm/tag";
+import { Tag } from "../litm/tag";
 import { handleMessage } from "./handler";
 
 const entities = new Map<string, { entity: Entity, position: { x: number, y: number } }>();

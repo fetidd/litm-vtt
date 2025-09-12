@@ -1,6 +1,6 @@
 import {ModifierEntity} from "./entity";
 
-export default class Tag extends ModifierEntity {
+export class Tag extends ModifierEntity {
     override canBurn: boolean = true;
     constructor(
         public name: string, 
@@ -9,7 +9,8 @@ export default class Tag extends ModifierEntity {
     {
         super();
     }
-    announceState() {
-        console.log(`Tag ${this.name} ${this.id}`);
-    }
-} 
+}
+
+export class PowerTag extends Tag {}
+
+export class StoryTag extends Tag {}

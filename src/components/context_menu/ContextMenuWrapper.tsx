@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useTransformContext } from 'react-zoom-pan-pinch';
 
 type ContextMenuWrapperProps = {
     menu: React.ReactNode;
@@ -9,6 +10,8 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
     const [visible, setVisible] = useState(false);
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const menuRef = useRef<HTMLDivElement>(null);
+    const transformContext = useTransformContext();
+
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
@@ -31,7 +34,8 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        setPos({ x: e.clientX, y: e.clientY });
+        const el = e.target as Node;
+        setPos({ x: (e.clientX - transformContext.transformState.positionX) / transformContext.transformState.scale, y: (e.clientY - transformContext.transformState.positionY) / transformContext.transformState.scale });
         setVisible(true);
     };
 

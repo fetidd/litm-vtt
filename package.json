@@ -13,7 +13,8 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@heroicons/react": "^2.2.0",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "react-zoom-pan-pinch": "^3.7.0"
   },
   "devDependencies": {
     "@types/bun": "latest",

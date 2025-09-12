@@ -8,14 +8,15 @@ import RollWidget from "./components/roll_widget/RollWidget";
 
 import type Modifier from "./litm/modifier";
 import type User from "./user";
+import { TransformWrapper } from "react-zoom-pan-pinch";
 
 type EntityPositionData = { entity: Entity, position: { x: number, y: number } };
 
 export const UserContext: Context<User | null> = createContext(null as User | null);
 
 export function App() {
-  const [user, setUser] = useState<User>({username: "Fetiddius", role: "narrator"} as User)
-  
+  const [user, setUser] = useState<User>({ username: "Fetiddius", role: "narrator" } as User)
+
   // STATE - this will probably need to become context provided soon, this feels like a lot...
   const [gameTableEntities, setGameTableEntities] = useState<EntityPositionData[]>([]);
   const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>([]);
@@ -52,7 +53,7 @@ export function App() {
 
         case 'rollResponse':
           const rollMessage = message as RollResponse;
-          setRollMessages(prev => [...prev, {id: rollMessage.id, text: rollMessage.message}])
+          setRollMessages(prev => [...prev, { id: rollMessage.id, text: rollMessage.message }])
           break;
 
         default:
@@ -76,7 +77,7 @@ export function App() {
 
   const removeEntityFromGameTable = (entity: Entity) => {
     setGameTableEntities(prev => {
-      return [ ...prev.filter(e => e.entity.id != entity.id)];
+      return [...prev.filter(e => e.entity.id != entity.id)];
     })
   };
 
@@ -97,19 +98,26 @@ export function App() {
   return (
     <div className="app" style={style}>
       <UserContext value={user}>
-      <GameTable
-        websocket={ws}
-        entities={gameTableEntities}
-        addModifier={toggleSelectedModifier}
-        removeEntity={removeEntityFromGameTable}
-      />
-      <RollWidget 
-        websocket={ws}
-        rollMessages={rollMessages}
-        modifiers={selectedModifiers} 
-        handleRemoveModifier={handleRemoveModifier}
-        clearModifiers={() => setSelectedModifiers([])}
-      />
+        <TransformWrapper
+          panning={{ excluded: ["draggable-entity"] }}
+          minScale={0.5}
+          maxScale={1}
+          limitToBounds={false}
+        >
+          <GameTable
+            websocket={ws}
+            entities={gameTableEntities}
+            addModifier={toggleSelectedModifier}
+            removeEntity={removeEntityFromGameTable}
+          />
+        </TransformWrapper>
+        <RollWidget
+          websocket={ws}
+          rollMessages={rollMessages}
+          modifiers={selectedModifiers}
+          handleRemoveModifier={handleRemoveModifier}
+          clearModifiers={() => setSelectedModifiers([])}
+        />
       </UserContext>
     </div>
   );
