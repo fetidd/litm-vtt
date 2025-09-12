@@ -17,7 +17,7 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
         const handleClick = (e: MouseEvent) => {
             if (menuRef.current) {
                 if (!menuRef.current.contains(e.target as Node)) {
-                setVisible(false);
+                    setVisible(false);
                 } else {
                     e.stopPropagation();
                     e.preventDefault();
@@ -40,7 +40,7 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
     };
 
     return (
-        <div style={{ display: 'inline-block', position: 'relative' }} onContextMenu={handleContextMenu}>
+        <div style={{}} onContextMenu={handleContextMenu}>
             {children}
             {visible && (
                 <div
@@ -53,6 +53,7 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
                         background: 'transparent',
                         boxShadow: '4 2px 8px rgba(0,0,0,0.15)',
                         minWidth: 120,
+                        cursor: "pointer"
                     }}
                 >
                     {menu}

@@ -56,25 +56,27 @@ export function GameTable({
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, delta } = event;
+        // set the position locally
         setEntityPositions((prev) =>
             prev.map((entity_data) =>
                 entity_data.entity.id === active.id
                     ? {
                         ...entity_data,
                         position: {
-                            x: entity_data.position.x + (delta.x / transformContext.transformState.scale),
-                            y: entity_data.position.y + (delta.y / transformContext.transformState.scale),
+                            x: Math.min(Math.max(entity_data.position.x + (delta.x / transformContext.transformState.scale), 0), 2000 - 200),
+                            y: Math.min(Math.max(entity_data.position.y + (delta.y / transformContext.transformState.scale), 0), 1200 - 40),
                         },
                     }
                     : entity_data
             )
         );
+        // update the server position
         const movedEntity = entityPositions.find((entity_data) => entity_data.entity.id === active.id);
         if (movedEntity) {
             sendEntityPosition(
                 movedEntity.entity.id,
-                movedEntity.position.x + (delta.x / transformContext.transformState.scale),
-                movedEntity.position.y + (delta.y / transformContext.transformState.scale)
+                Math.min(Math.max(movedEntity.position.x + (delta.x / transformContext.transformState.scale), 0), 2000 - 200),
+                Math.min(Math.max(movedEntity.position.y + (delta.y / transformContext.transformState.scale), 0), 1200 - 40)
             );
         }
     };
@@ -116,20 +118,24 @@ export function GameTable({
                     wrapperStyle={{height: "100%", width: "100%" }}
                     // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
                 >
-                    <div style={{
-                        height: "3000px",
-                        width: "3000px",
-                        background: "conic-gradient(#dc57af 90deg,#a80f75 90deg 180deg,#dc57af 180deg 270deg,#a80f75 270deg)",
+                    <div 
+                    id="game-board"
+                    style={{
+                        height: "1200px",
+                        width: "2000px",
+                        background: "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
                         backgroundRepeat: "repeat",
                         backgroundSize: "60px 60px",
                         backgroundPosition: "top left",
-                        overflow: "hidden" 
+                        // overflow: "hidden" 
                     }}
                     >
                         {entityPositions.map((entity_data) => (
                             <div
+                                className="draggable-div"
                                 key={entity_data.entity.id}
                                 onMouseDown={() => setLastMovedEntityId(entity_data.entity.id)}
+                                style={{position: "absolute"}}
                             >
                                 <ContextMenuWrapper menu={getContextMenuForEntity(entity_data.entity)}>
                                     <DraggableEntity
@@ -139,6 +145,7 @@ export function GameTable({
                                         x={entity_data.position.x}
                                         y={entity_data.position.y}
                                         height={lastMovedEntityId === entity_data.entity.id ? 10 : 2}
+                                        bounds={{minX: 0, minY: 0, maxX: 2000, maxY: 1200}}
                                     />
                                 </ContextMenuWrapper>
                             </div>

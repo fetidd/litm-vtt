@@ -1,4 +1,4 @@
-import type { Entity, ModifierEntity } from "@/litm/entity";
+import type { Entity, ModifierEntity } from "../../litm/entity";
 import { FireIcon, MinusCircleIcon, PlusCircleIcon, TrashIcon } from "@heroicons/react/16/solid";
 
 type Props = {

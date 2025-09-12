@@ -102,7 +102,13 @@ export function App() {
           panning={{ excluded: ["draggable-entity"] }}
           minScale={0.5}
           maxScale={1}
-          limitToBounds={false}
+          // limitToBounds={false}
+          centerZoomedOut={true}
+          disablePadding={true}
+          minPositionX={0}
+          minPositionY={0}
+          maxPositionX={0}
+          maxPositionY={0}
         >
           <GameTable
             websocket={ws}
