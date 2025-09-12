@@ -103,26 +103,27 @@ export function GameTable({
                 ref={setNodeRef}
                 style={{
                     position: "relative",
-                    width: "80%",
+                    width: "90vw",
                     height: "98vh",
                     border: "2px solid #68ff03ff",
-                    overflow: "hidden",
                     borderRadius: "4px",
                     boxSizing: "border-box",
-                    background: "rgba(37, 41, 58, 1)"
+                    background: "rgba(37, 41, 58, 1)",
+                    overflow: "hidden"
                 }}
             >
                 <TransformComponent
-                    wrapperStyle={{ border: "2px solid #00ffffff", height: "100%", width: "100%" }}
-                    contentStyle={{ border: "2px solid #ffe711ff", padding: "5px" }}
+                    wrapperStyle={{height: "100%", width: "100%" }}
+                    // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
                 >
                     <div style={{
-                        height: "1000px",
-                        width: "1000px",
+                        height: "3000px",
+                        width: "3000px",
                         background: "conic-gradient(#dc57af 90deg,#a80f75 90deg 180deg,#dc57af 180deg 270deg,#a80f75 270deg)",
                         backgroundRepeat: "repeat",
                         backgroundSize: "60px 60px",
                         backgroundPosition: "top left",
+                        overflow: "hidden" 
                     }}
                     >
                         {entityPositions.map((entity_data) => (
