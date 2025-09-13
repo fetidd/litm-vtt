@@ -6,8 +6,10 @@ import { handleMessage } from "./handler";
 const entities = new Map<string, { entity: Entity, position: { x: number, y: number } }>();
 const freezingTag = new Tag("Freezing cold");
 const onFireTag = new Tag("On fire!");
+const guyTag = new Tag("That guy you met at the tavern last week");
 entities.set(freezingTag.id, { entity: freezingTag, position: { x: 15, y: 15 } });
 entities.set(onFireTag.id, { entity: onFireTag, position: { x: 30, y: 67 } });
+entities.set(guyTag.id, { entity: guyTag, position: { x: 70, y: 100 } });
 
 const server = Bun.serve<{ authToken: string }, {}>({
   port: 3000,

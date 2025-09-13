@@ -24,7 +24,7 @@ export function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const webSocket = new WebSocket("ws://localhost:3000/");
+    const webSocket = new WebSocket("https://litm-vtt.fly.dev/");
     setWs(webSocket);
 
     webSocket.onmessage = function (event) {

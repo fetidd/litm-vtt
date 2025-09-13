@@ -1,6 +1,6 @@
 import type { ServerWebSocket } from "bun";
 import { ClientMessage, RollRequest, RollResponse, UpdateGameTableEntityPosition } from "../messaging/message";
-import { generateId } from "@/utils";
+import { generateId } from "../utils";
 
 function handleMessage(
   ws: ServerWebSocket<{ authToken: string }>,

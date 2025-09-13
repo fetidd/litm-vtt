@@ -11,7 +11,8 @@ import { Entity, ModifierEntity } from "../../litm/entity";
 import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
 import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 import { UpdateGameTableEntityPosition } from "../../messaging/message";
-import { TransformWrapper, TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
+import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
+import { GAME_TABLE_HEIGHT, GAME_TABLE_SELECTED_ENTITY_ZINDEX, GAME_TABLE_WIDTH, GAME_TABLE_ZINDEX, TAG_CHAR_WIDTH_MULTIPLIER, TAG_HEIGHT } from "../../constants";
 
 type DraggableEntityData = {
     entity: Entity
@@ -31,13 +32,10 @@ export function GameTable({
     removeEntity,
     websocket
 }: GameTableProps) {
-    // console.debug("Rendering GameTable component with entities:", entities);
-
     const [entityPositions, setEntityPositions] = useState<DraggableEntityData[]>(entities);
     const [lastMovedEntityId, setLastMovedEntityId] = useState<string | null>(null);
     const transformContext = useTransformContext();
-
-    // console.debug("Entity positions state:", entityPositions);
+    const [tableSize, setTableSize] = useState({ width: GAME_TABLE_WIDTH, height: GAME_TABLE_HEIGHT })
 
     React.useEffect(() => {
         setEntityPositions(entities);
@@ -46,7 +44,6 @@ export function GameTable({
 
     const sendEntityPosition = (id: string, x: number, y: number) => {
         const message = new UpdateGameTableEntityPosition(id, x, y);
-        // console.debug("Sending message:", message);
         websocket!.send(JSON.stringify(message));
     }
 
@@ -54,29 +51,36 @@ export function GameTable({
         id: "game-table",
     });
 
+    const calculateNewXPosition = (entityData: DraggableEntityData, delta: number, height: number) => {
+        return Math.min(Math.max(entityData.position.x + (delta / transformContext.transformState.scale), 0), height - (entityData.entity.name.length * TAG_CHAR_WIDTH_MULTIPLIER))
+    };
+    const calculateNewYPosition = (entityData: DraggableEntityData, delta: number, width: number) => {
+        return Math.min(Math.max(entityData.position.y + (delta / transformContext.transformState.scale), 0), width - TAG_HEIGHT)
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, delta } = event;
         // set the position locally
         setEntityPositions((prev) =>
-            prev.map((entity_data) =>
-                entity_data.entity.id === active.id
+            prev.map((entityData) =>
+                entityData.entity.id === active.id
                     ? {
-                        ...entity_data,
+                        ...entityData,
                         position: {
-                            x: Math.min(Math.max(entity_data.position.x + (delta.x / transformContext.transformState.scale), 0), 2000 - 200),
-                            y: Math.min(Math.max(entity_data.position.y + (delta.y / transformContext.transformState.scale), 0), 1200 - 40),
+                            x: calculateNewXPosition(entityData, delta.x, tableSize.width),
+                            y: calculateNewYPosition(entityData, delta.y, tableSize.height),
                         },
                     }
-                    : entity_data
+                    : entityData
             )
         );
         // update the server position
-        const movedEntity = entityPositions.find((entity_data) => entity_data.entity.id === active.id);
+        const movedEntity = entityPositions.find((entityData) => entityData.entity.id === active.id);
         if (movedEntity) {
             sendEntityPosition(
                 movedEntity.entity.id,
-                Math.min(Math.max(movedEntity.position.x + (delta.x / transformContext.transformState.scale), 0), 2000 - 200),
-                Math.min(Math.max(movedEntity.position.y + (delta.y / transformContext.transformState.scale), 0), 1200 - 40)
+                calculateNewXPosition(movedEntity, delta.x, tableSize.width),
+                calculateNewYPosition(movedEntity, delta.y, tableSize.height)
             );
         }
     };
@@ -115,37 +119,37 @@ export function GameTable({
                 }}
             >
                 <TransformComponent
-                    wrapperStyle={{height: "100%", width: "100%" }}
-                    // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
+                    wrapperStyle={{ height: "100%", width: "100%" }}
+                // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
                 >
-                    <div 
-                    id="game-board"
-                    style={{
-                        height: "1200px",
-                        width: "2000px",
-                        background: "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
-                        backgroundRepeat: "repeat",
-                        backgroundSize: "60px 60px",
-                        backgroundPosition: "top left",
-                        // overflow: "hidden" 
-                    }}
+                    <div
+                        id="game-board"
+                        style={{
+                            height: `${tableSize.height}px`,
+                            width: `${tableSize.width}px`,
+                            background: "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
+                            backgroundRepeat: "repeat",
+                            backgroundSize: "60px 60px",
+                            backgroundPosition: "top left",
+                            // overflow: "hidden" 
+                        }}
                     >
-                        {entityPositions.map((entity_data) => (
+                        {entityPositions.map((entityData) => (
                             <div
                                 className="draggable-div"
-                                key={entity_data.entity.id}
-                                onMouseDown={() => setLastMovedEntityId(entity_data.entity.id)}
-                                style={{position: "absolute"}}
+                                key={entityData.entity.id}
+                                onMouseDown={() => setLastMovedEntityId(entityData.entity.id)}
+                                style={{ position: "absolute" }}
                             >
-                                <ContextMenuWrapper menu={getContextMenuForEntity(entity_data.entity)}>
+                                <ContextMenuWrapper menu={getContextMenuForEntity(entityData.entity)}>
                                     <DraggableEntity
-                                        key={entity_data.entity.id}
-                                        id={entity_data.entity.id}
-                                        entity={entity_data.entity}
-                                        x={entity_data.position.x}
-                                        y={entity_data.position.y}
-                                        height={lastMovedEntityId === entity_data.entity.id ? 10 : 2}
-                                        bounds={{minX: 0, minY: 0, maxX: 2000, maxY: 1200}}
+                                        key={entityData.entity.id}
+                                        id={entityData.entity.id}
+                                        entity={entityData.entity}
+                                        x={entityData.position.x}
+                                        y={entityData.position.y}
+                                        zIndex={lastMovedEntityId === entityData.entity.id ? GAME_TABLE_SELECTED_ENTITY_ZINDEX : GAME_TABLE_ZINDEX}
+                                        bounds={{ minX: 0, minY: 0, maxX: tableSize.width, maxY: tableSize.height }}
                                     />
                                 </ContextMenuWrapper>
                             </div>
