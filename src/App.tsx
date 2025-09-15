@@ -9,6 +9,9 @@ import RollWidget from "./components/roll_widget/RollWidget";
 import type Modifier from "./litm/modifier";
 import type User from "./user";
 import { TransformWrapper } from "react-zoom-pan-pinch";
+import { Tag as LitmTag } from "./litm/tag";
+import { Status as LitmStatus } from "./litm/status";
+import { StoryTheme as LitmStoryTheme, HeroTheme as LitmHeroTheme } from "./litm/theme";
 
 type EntityPositionData = { entity: Entity, position: { x: number, y: number } };
 
@@ -24,7 +27,8 @@ export function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const webSocket = new WebSocket("https://litm-vtt.fly.dev/");
+    // const webSocket = new WebSocket("https://litm-vtt.fly.dev/");
+    const webSocket = new WebSocket("http://localhost:3000/");
     setWs(webSocket);
 
     webSocket.onmessage = function (event) {
@@ -39,13 +43,28 @@ export function App() {
         case 'gameTableEntitySync':
           const { entities }: { entities: EntityPositionData[] } = message; // TODO create an actual message for this!
           entities.forEach((e: EntityPositionData) => {
-            const existingEntity = gameTableEntities.find(ent => ent.entity.id === e.entity.id);
+            const existingEntity = gameTableEntities.find(ent => ent.entity.id === e.entity.id && ent.entity.entityType === e.entity.entityType);
             if (existingEntity) {
               existingEntity.position.x = e.position.x;
               existingEntity.position.y = e.position.y;
             } else {
               setGameTableEntities(prev => {
-                return [...prev, { position: { x: e.position.x, y: e.position.y }, entity: e.entity }];
+                let ent: LitmStatus | LitmTag | LitmStoryTheme | undefined = undefined;
+                switch (e.entity.entityType) {
+                  case "tag":
+                    ent = LitmTag.deserialize(e.entity)
+                    break;
+                  case "status":
+                    ent = LitmStatus.deserialize(e.entity)
+                    break;
+                  case "story-theme":
+                    ent = LitmStoryTheme.deserialize(e.entity)
+                    break;
+                  case "hero-theme":
+                    ent = LitmHeroTheme.deserialize(e.entity)
+                    break;
+                }
+                return [...prev, { position: { x: e.position.x, y: e.position.y }, entity: ent! }];
               });
             }
           });

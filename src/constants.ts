@@ -1,7 +1,11 @@
-export const TAG_HEIGHT: number = 30;
-export const TAG_CHAR_WIDTH_MULTIPLIER: number = 8.5;
-
-export const GAME_TABLE_HEIGHT: number = 1200;
-export const GAME_TABLE_WIDTH: number = 2000;
-export const GAME_TABLE_SELECTED_ENTITY_ZINDEX: number = 10;
-export const GAME_TABLE_ZINDEX: number = 2;
+export default {
+    TAG_HEIGHT: 30,
+    STATUS_HEIGHT: 30,
+    TAG_CHAR_WIDTH_MULTIPLIER: 9,
+    GAME_TABLE_HEIGHT: 1200,
+    GAME_TABLE_WIDTH: 2000,
+    GAME_TABLE_SELECTED_ENTITY_ZINDEX: 10,
+    GAME_TABLE_ZINDEX: 2,
+    TAG_COLOR: "#fff9a6",
+    STATUS_COLOR: "#b5fa95ff",
+}

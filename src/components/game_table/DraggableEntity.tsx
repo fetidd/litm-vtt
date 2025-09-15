@@ -1,12 +1,14 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Entity } from "../../litm/entity";
+import { Entity, type EntityType } from '../../litm/entity';
 import { Tag as LitmTag } from "../../litm/tag";
+import { StoryTheme as LitmStoryTheme } from "../../litm/theme"
+import { Status as LitmStatus } from "../../litm/status"
 import { useTransformContext } from "react-zoom-pan-pinch";
-import Tag from "../Tag";
-import Theme from "../Theme";
+import Tag, { type TagProps } from "../Tag";
+import Theme, { type ThemeProps } from "../Theme";
+import constant from "../../constants";
 import Status from "../Status";
-import { TAG_CHAR_WIDTH_MULTIPLIER, TAG_HEIGHT } from "../../constants";
 
 type DraggableEntityProps = {
     id: string;
@@ -24,7 +26,7 @@ export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableE
     const transformContext = useTransformContext();
     const xOffset = transform == null ? 0 : transform.x / transformContext.transformState.scale;
     const yOffset = transform == null ? 0 : transform.y / transformContext.transformState.scale;
-    const { component, xBound, yBound } = getEntityComponent(entity);
+    const { xBound, yBound } = getEntityComponentBounds(entity);
     const left = Math.min(Math.max(x + xOffset, bounds.minX), bounds.maxX - xBound);
     const top = Math.min(Math.max(y + yOffset, bounds.minY), bounds.maxY - yBound);
 
@@ -48,21 +50,23 @@ export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableE
             {...listeners}
             {...attributes}
         >
-            {component}
+            {entity.entityType == "tag" && <Tag tag={entity as LitmTag} />}
+            {entity.entityType == "story-theme" && <Theme theme={entity as LitmStoryTheme} />}
+            {entity.entityType == "status" && <Status status={entity as LitmStatus} />}
         </div>
     )
 }
 
-function getEntityComponent(entity: Entity): {component: any, xBound: number, yBound: number} {
+function getEntityComponentBounds(entity: Entity): {xBound: number, yBound: number} {
     switch (entity.entityType) {
         case "tag":
-            return { component: <Tag tag={ entity as LitmTag }/>, xBound: entity.name.length*TAG_CHAR_WIDTH_MULTIPLIER, yBound: TAG_HEIGHT}
-        case "theme":
-            return { component: <Theme />, xBound: 200, yBound: 40}
+            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}
+        case "story-theme":
+            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}
         case "status":
-            return { component: <Status />, xBound: 200, yBound: 40}
+            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.STATUS_HEIGHT}
         default:
-            return { component: <div>{entity.entityType}</div>, xBound: 0, yBound: 0}
+            throw Error()
     }
 }
 

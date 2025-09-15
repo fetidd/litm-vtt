@@ -12,7 +12,7 @@ import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
 import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 import { UpdateGameTableEntityPosition } from "../../messaging/message";
 import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
-import { GAME_TABLE_HEIGHT, GAME_TABLE_SELECTED_ENTITY_ZINDEX, GAME_TABLE_WIDTH, GAME_TABLE_ZINDEX, TAG_CHAR_WIDTH_MULTIPLIER, TAG_HEIGHT } from "../../constants";
+import constant from "../../constants";
 
 type DraggableEntityData = {
     entity: Entity
@@ -35,7 +35,7 @@ export function GameTable({
     const [entityPositions, setEntityPositions] = useState<DraggableEntityData[]>(entities);
     const [lastMovedEntityId, setLastMovedEntityId] = useState<string | null>(null);
     const transformContext = useTransformContext();
-    const [tableSize, setTableSize] = useState({ width: GAME_TABLE_WIDTH, height: GAME_TABLE_HEIGHT })
+    const [tableSize, setTableSize] = useState({ width: constant.GAME_TABLE_WIDTH, height: constant.GAME_TABLE_HEIGHT })
 
     React.useEffect(() => {
         setEntityPositions(entities);
@@ -52,10 +52,10 @@ export function GameTable({
     });
 
     const calculateNewXPosition = (entityData: DraggableEntityData, delta: number, height: number) => {
-        return Math.min(Math.max(entityData.position.x + (delta / transformContext.transformState.scale), 0), height - (entityData.entity.name.length * TAG_CHAR_WIDTH_MULTIPLIER))
+        return Math.min(Math.max(entityData.position.x + (delta / transformContext.transformState.scale), 0), height - (entityData.entity.name.length * constant.TAG_CHAR_WIDTH_MULTIPLIER))
     };
     const calculateNewYPosition = (entityData: DraggableEntityData, delta: number, width: number) => {
-        return Math.min(Math.max(entityData.position.y + (delta / transformContext.transformState.scale), 0), width - TAG_HEIGHT)
+        return Math.min(Math.max(entityData.position.y + (delta / transformContext.transformState.scale), 0), width - constant.TAG_HEIGHT)
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -148,7 +148,7 @@ export function GameTable({
                                         entity={entityData.entity}
                                         x={entityData.position.x}
                                         y={entityData.position.y}
-                                        zIndex={lastMovedEntityId === entityData.entity.id ? GAME_TABLE_SELECTED_ENTITY_ZINDEX : GAME_TABLE_ZINDEX}
+                                        zIndex={lastMovedEntityId === entityData.entity.id ? constant.GAME_TABLE_SELECTED_ENTITY_ZINDEX : constant.GAME_TABLE_ZINDEX}
                                         bounds={{ minX: 0, minY: 0, maxX: tableSize.width, maxY: tableSize.height }}
                                     />
                                 </ContextMenuWrapper>

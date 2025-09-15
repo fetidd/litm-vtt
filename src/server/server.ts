@@ -1,15 +1,19 @@
 import index from "../index.html";
 import { Entity } from "../litm/entity";
+import { Status } from "../litm/status";
 import { Tag } from "../litm/tag";
 import { handleMessage } from "./handler";
 
 const entities = new Map<string, { entity: Entity, position: { x: number, y: number } }>();
 const freezingTag = new Tag("Freezing cold");
+freezingTag.isScratched = true;
 const onFireTag = new Tag("On fire!");
 const guyTag = new Tag("That guy you met at the tavern last week");
+const drunkStatus = new Status("Drunk", 3);
 entities.set(freezingTag.id, { entity: freezingTag, position: { x: 15, y: 15 } });
 entities.set(onFireTag.id, { entity: onFireTag, position: { x: 30, y: 67 } });
 entities.set(guyTag.id, { entity: guyTag, position: { x: 70, y: 100 } });
+entities.set(drunkStatus.id, { entity: drunkStatus, position: {x: 90, y: 120}});
 
 const server = Bun.serve<{ authToken: string }, {}>({
   port: 3000,
@@ -18,6 +22,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
     if (success) {
       // Bun automatically returns a 101 Switching Protocols
       // if the upgrade succeeds
+        console.debug(`Upgrading!`)
       return undefined;
     }
 
@@ -27,7 +32,6 @@ const server = Bun.serve<{ authToken: string }, {}>({
   websocket: {
     // this is called when a message is received
     async message(ws, message) {
-      // console.debug(`WebSocket message received: ${message}`);
       handleMessage(ws, message, entities, server);
     },
 
@@ -82,7 +86,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
     hmr: true,
 
     // Echo console logs from the browser to the server
-    console: true,
+    console: false,
   },
 });
 console.log(`🚀 Server running at ${server.url}`);

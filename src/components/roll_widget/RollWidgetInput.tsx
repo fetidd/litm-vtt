@@ -1,3 +1,4 @@
+import constants from '@/constants';
 import type Modifier from '../../litm/modifier';
 import { Tag } from '../../litm/tag';
 
@@ -27,8 +28,8 @@ export default function RollWidgetInput({
                                     key={mod.entity.id}
                                     onClick={() => handleModifierRemove(mod.entity.id)}
                                     style={{
-                                        background: "#ffe066",
-                                        border: "1px solid #e6c200",
+                                        background: `${mod.entity.entityType == "tag" ? constants.TAG_COLOR : constants.STATUS_COLOR}`,
+                                        border: "1px solid #rgba(219, 42, 10, 1)",
                                         color: "#333",
                                         borderRadius: "4px",
                                         padding: "2px 8px",
@@ -37,7 +38,7 @@ export default function RollWidgetInput({
                                         display: "inline-block",
                                     }}
                                 >
-                                    {mod.entity.name}
+                                    {`${mod.entity.name}`}
                                 </span>
                             ))}
                         </div>
