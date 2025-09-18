@@ -1,12 +1,10 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Entity, type EntityType } from '../../litm/entity';
+import { Entity } from '../../litm/entity';
 import { Tag as LitmTag } from "../../litm/tag";
-import { StoryTheme as LitmStoryTheme } from "../../litm/theme"
 import { Status as LitmStatus } from "../../litm/status"
 import { useTransformContext } from "react-zoom-pan-pinch";
-import Tag, { type TagProps } from "../Tag";
-import Theme, { type ThemeProps } from "../Theme";
+import Tag from "../Tag";
 import constant from "../../constants";
 import Status from "../Status";
 
@@ -17,9 +15,12 @@ type DraggableEntityProps = {
     y: number;
     zIndex: number;
     bounds: { minX: number, minY: number, maxX: number, maxY: number };
+    editable: boolean;
+    updateEntity: (id: string, updater: (ent: Entity) => Entity) => void,
+    setEditingEntity: (id: string | undefined) => void,
 };
 
-export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableEntityProps) {
+export function DraggableEntity({ id, entity, x, y, zIndex, bounds, editable, updateEntity, setEditingEntity }: DraggableEntityProps) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id,
     });
@@ -41,7 +42,6 @@ export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableE
         touchAction: "none",
     };
 
-
     return (
         <div
             className="draggable-entity"
@@ -50,9 +50,9 @@ export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableE
             {...listeners}
             {...attributes}
         >
-            {entity.entityType == "tag" && <Tag tag={entity as LitmTag} />}
-            {entity.entityType == "story-theme" && <Theme theme={entity as LitmStoryTheme} />}
-            {entity.entityType == "status" && <Status status={entity as LitmStatus} />}
+            {entity.entityType == "tag" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity}/>}
+            {entity.entityType == "status" && <Status status={entity as LitmStatus} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity}/>}
+            {entity.entityType == "story-theme" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity}/>}
         </div>
     )
 }
@@ -60,13 +60,13 @@ export function DraggableEntity({ id, entity, x, y, zIndex, bounds }: DraggableE
 function getEntityComponentBounds(entity: Entity): {xBound: number, yBound: number} {
     switch (entity.entityType) {
         case "tag":
-            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}
+            {return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}}
         case "story-theme":
-            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}
+            {return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.TAG_HEIGHT}}
         case "status":
-            return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.STATUS_HEIGHT}
+            {return {xBound: entity.name.length*constant.TAG_CHAR_WIDTH_MULTIPLIER, yBound: constant.STATUS_HEIGHT}}
         default:
-            throw Error()
+            {throw Error()}
     }
 }
 

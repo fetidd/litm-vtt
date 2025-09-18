@@ -6,12 +6,13 @@ type ContextMenuWrapperProps = {
     children: React.ReactNode;
 };
 
-export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, children }) => {
+// TODO make this not change size when the gamnetable is zoomed!
+
+export function ContextMenuWrapper({ menu, children }: ContextMenuWrapperProps) {
     const [visible, setVisible] = useState(false);
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const menuRef = useRef<HTMLDivElement>(null);
     const transformContext = useTransformContext();
-
 
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
@@ -34,10 +35,14 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        const el = e.target as Node;
+        e.stopPropagation();
         setPos({ x: (e.clientX - transformContext.transformState.positionX) / transformContext.transformState.scale, y: (e.clientY - transformContext.transformState.positionY) / transformContext.transformState.scale });
         setVisible(true);
     };
+
+    const closeContextMenu = () => {
+        setVisible(false);
+    }
 
     return (
         <div style={{}} onContextMenu={handleContextMenu}>
@@ -55,6 +60,7 @@ export const ContextMenuWrapper: React.FC<ContextMenuWrapperProps> = ({ menu, ch
                         minWidth: 120,
                         cursor: "pointer"
                     }}
+                    onClick={closeContextMenu}
                 >
                     {menu}
                 </div>
