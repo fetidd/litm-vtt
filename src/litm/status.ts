@@ -3,7 +3,7 @@ import { ModifierEntity, type EntityType } from "./entity";
 export class Status extends ModifierEntity {
   
     public override get canBurn(): boolean {
-      return true
+      return false
     }
 
     override entityType: EntityType = 'status';
