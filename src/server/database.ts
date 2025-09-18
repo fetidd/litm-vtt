@@ -25,11 +25,13 @@ export default class LitmDatabase {
 
         this.db.query("CREATE TABLE GameTableState (entityId STRING PRIMARY KEY NOT NULL, x REAL NOT NULL, y REAL NOT NULL);").run();
 
+        const exampleStatuses = ["drunk", "warded", "damaged", "burning", "intimidated"];
+        const exampleTags = ["sharp", "strong", "sword", "woodsman's axe", "travel supplies"];
+
         this.db.query("CREATE TABLE Tag (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, isScratched boolean NOT NULL);").run();
         for (let i = 0; i < 5; i++) {
             const id = generateId();
-            const sql = `INSERT INTO Tag VALUES ('${id}', 'tag_${i}', false);`;
-            this.db.query(sql).run();
+            this.db.query<{ id: string, name: string, isScratched: boolean}, SQLQueryBindings[]>(`INSERT INTO Tag VALUES ($id, $name, $isScratched);`).run({$id: id, $name: exampleTags[i]!, $isScratched: false});
             const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${i * 50});`
             this.db.query(sql2).run();
         }
@@ -37,8 +39,8 @@ export default class LitmDatabase {
         this.db.query("CREATE TABLE Status (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, tiers STRING NOT NULL);").run();
         for (let i = 0; i < 5; i++) {
             const id = generateId();
-            const sql = `INSERT INTO Status VALUES ('${id}', 'status_${i}', '1,2,3');`;
-            this.db.query(sql).run();
+            const sql = `INSERT INTO Status VALUES ('${id}', '${exampleStatuses[i]}', '${i}');`;
+            this.db.query<{ id: string, name: string, tiers: string}, SQLQueryBindings[]>(`INSERT INTO Status VALUES ($id, $name, $tiers);`).run({$id: id, $name: exampleStatuses[i]!, $tiers: (i+1).toString()});
             const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${(i * 50 + 200)})`;
             this.db.query(sql2).run();
         }

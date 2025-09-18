@@ -117,7 +117,7 @@ export function GameTable({
     const createNewGameBoardTag = (e: React.MouseEvent) => {
         const where = {x: e.clientX, y: e.clientY};
         // open a modal to enter tag details, or extend the context menu with an input?
-        const tag = new LitmTag("TAG");
+        const tag = new LitmTag("");
         setEditing(tag.id)
         addEntity(tag, where)
         createNewGameTableEntity(tag, where.x, where.y)
@@ -126,7 +126,7 @@ export function GameTable({
     const createNewGameBoardStatus = (e: React.MouseEvent) => {
         const where = {x: e.clientX, y: e.clientY};
         // open a modal to enter status details, or extend the context menu with an input?
-        const status = new LitmStatus("TAG");
+        const status = new LitmStatus("");
         setEditing(status.id)
         addEntity(status, where)
         createNewGameTableEntity(status, where.x, where.y)

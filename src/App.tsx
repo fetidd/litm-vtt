@@ -46,7 +46,7 @@ export function App() {
     };
   }, []);
 
-  const toggleSelectedModifier = (entity: ModifierEntity, polarity: 'add' | 'subtract', isBurned: boolean) => {
+  const addSelectedModifier = (entity: ModifierEntity, polarity: 'add' | 'subtract', isBurned: boolean) => {
     setSelectedModifiers(prev => {
       if (!prev.find(e => e.entity.id === entity.id)) {
         return [...prev, { entity, isBurned, polarity }];
@@ -95,7 +95,7 @@ export function App() {
         <UserContext value={user}>
           <TransformWrapper
             panning={{ excluded: ["draggable-entity"] }}
-            minScale={0.5}
+            minScale={1}
             maxScale={1}
             // limitToBounds={false}
             centerZoomedOut={true}
@@ -108,7 +108,7 @@ export function App() {
             <GameTable
               websocket={ws}
               entities={gameTableEntities}
-              addModifier={toggleSelectedModifier}
+              addModifier={addSelectedModifier}
               removeEntity={removeEntityFromGameTable}
               addEntity={addNewEntityToGameTable}
               updateEntity={updateEntityDetails}

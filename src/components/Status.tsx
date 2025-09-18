@@ -15,7 +15,7 @@ export default function Status({ status, editing, setEditing, updateEntity }: Pr
         border: "1px solid #46a32aff",
         borderRadius: "4px",
         width: `${(statusText.length * constant.TAG_CHAR_WIDTH_MULTIPLIER) + 10}px`,
-        minWidth: "80px",
+        minWidth: " 100px",
         height: `${constant.STATUS_HEIGHT}px`,
         color: "#333",
         alignContent: "center",
