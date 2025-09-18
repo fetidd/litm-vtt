@@ -10,13 +10,26 @@ export abstract class Message {
 
 export abstract class ClientMessage extends Message { }
 
-export class UpdateGameTableEntityPosition extends ClientMessage {
+export class UpdateClientGameTableEntityPosition extends ClientMessage {
     type = 'updateGameTableEntityPosition';
     constructor(public id: string, public x: number, public y: number) {
         super();
     }
 }
 
+export class CreateNewGameTableEntity extends ClientMessage {
+    type = 'createNewGameTableEntity';
+    constructor(public entity: Entity, public x: number, public y: number) {
+        super();
+    }
+}
+
+export class UpdateClientGameTableEntityDetails extends ClientMessage {
+    type = 'updateGameTableDetails';
+    constructor(public entity: Entity) {
+        super();
+    }
+}
 
 export class RollRequest extends ClientMessage {
     type = 'rollRequest';
@@ -24,6 +37,8 @@ export class RollRequest extends ClientMessage {
         super();
     }
 }
+
+
 
 
 
@@ -36,6 +51,22 @@ export class GameTableEntitySync extends ServerMessage {
         super();
     }
 }
+
+export class UpdateGameTableEntityPosition extends ServerMessage {
+    type = 'updateGameTableEntityPosition';
+    constructor(public id: string, public x: number, public y: number) {
+        super();
+    }
+}
+
+
+export class UpdateGameTableEntityDetails extends ServerMessage {
+    type = 'updateGameTableDetails';
+    constructor(public entity: Entity) {
+        super();
+    }
+}
+
 
 
 export class RollResponse extends ServerMessage {

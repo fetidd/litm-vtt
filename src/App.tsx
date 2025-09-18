@@ -1,19 +1,19 @@
 import "../assets/index.css";
 
 import { GameTable } from "./components/game_table/GameTable";
-import { RollResponse, UpdateGameTableEntityPosition } from "./messaging/message";
 import { Entity, ModifierEntity } from "./litm/entity";
 import { createContext, useEffect, useState, type Context } from "react";
 import RollWidget from "./components/roll_widget/RollWidget";
-
 import type Modifier from "./litm/modifier";
 import type User from "./user";
 import { TransformWrapper } from "react-zoom-pan-pinch";
-import { Tag as LitmTag } from "./litm/tag";
-import { Status as LitmStatus } from "./litm/status";
-import { StoryTheme as LitmStoryTheme, HeroTheme as LitmHeroTheme } from "./litm/theme";
+import type { EntityPositionData } from "./types";
+import { handleRollResponse } from './handlers/rollResponse';
+import { handleUpdateClientGameTableEntityPosition } from "./handlers/updateClientGameTableEntityPosition";
+import { handleClientGameTableEntitySync } from "./handlers/clientGameTableEntitySync";
+import { UpdateGameTableEntityDetails } from "./messaging/message";
+import { handleUpdateClientGameTableEntityDetails } from "./handlers/updateClientGameTableEntityDetails";
 
-type EntityPositionData = { entity: Entity, position: { x: number, y: number } };
 
 export const UserContext: Context<User | null> = createContext(null as User | null);
 
@@ -26,60 +26,21 @@ export function App() {
   const [rollMessages, setRollMessages] = useState<{ id: string; text: string }[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
+  // WEBSOCKET HANDLING
   useEffect(() => {
     // const webSocket = new WebSocket("https://litm-vtt.fly.dev/");
     const webSocket = new WebSocket("http://localhost:3000/");
     setWs(webSocket);
-
     webSocket.onmessage = function (event) {
       const message = JSON.parse(event.data);
       switch (message.type) {
-
-        case 'updateGameTableEntityPosition':
-          const { id, x, y }: UpdateGameTableEntityPosition = message;
-          setGameTableEntities(prev => prev.map(e => e.entity.id === id ? { ...e, position: { x, y } } : e));
-          break;
-
-        case 'gameTableEntitySync':
-          const { entities }: { entities: EntityPositionData[] } = message; // TODO create an actual message for this!
-          entities.forEach((e: EntityPositionData) => {
-            const existingEntity = gameTableEntities.find(ent => ent.entity.id === e.entity.id && ent.entity.entityType === e.entity.entityType);
-            if (existingEntity) {
-              existingEntity.position.x = e.position.x;
-              existingEntity.position.y = e.position.y;
-            } else {
-              setGameTableEntities(prev => {
-                let ent: LitmStatus | LitmTag | LitmStoryTheme | undefined = undefined;
-                switch (e.entity.entityType) {
-                  case "tag":
-                    ent = LitmTag.deserialize(e.entity)
-                    break;
-                  case "status":
-                    ent = LitmStatus.deserialize(e.entity)
-                    break;
-                  case "story-theme":
-                    ent = LitmStoryTheme.deserialize(e.entity)
-                    break;
-                  case "hero-theme":
-                    ent = LitmHeroTheme.deserialize(e.entity)
-                    break;
-                }
-                return [...prev, { position: { x: e.position.x, y: e.position.y }, entity: ent! }];
-              });
-            }
-          });
-          break;
-
-        case 'rollResponse':
-          const rollMessage = message as RollResponse;
-          setRollMessages(prev => [...prev, { id: rollMessage.id, text: rollMessage.message }])
-          break;
-
-        default:
-          console.warn(`Unknown message type: ${message.type}`);
+        case 'updateGameTableEntityPosition': {handleUpdateClientGameTableEntityPosition(message, setGameTableEntities); break;}
+        case 'updateGameTableEntityDetails':  {handleUpdateClientGameTableEntityDetails(message, setGameTableEntities); break;}
+        case 'gameTableEntitySync':           {handleClientGameTableEntitySync(message, setGameTableEntities); break;}
+        case 'rollResponse':                  {handleRollResponse(message, setRollMessages); break;}
+        default:                              {console.warn(`Unknown message type: ${message.type}`);}
       }
     };
-
     return () => {
       webSocket.close();
     };
@@ -94,10 +55,24 @@ export function App() {
     });
   };
 
+  const addNewEntityToGameTable = (entity: Entity, position: { x: number, y: number }) => {
+    setGameTableEntities(prev => [...prev, { entity: entity, position: position }])
+  }
+
   const removeEntityFromGameTable = (entity: Entity) => {
-    setGameTableEntities(prev => {
-      return [...prev.filter(e => e.entity.id != entity.id)];
-    })
+    setGameTableEntities(prev => [...prev.filter(e => e.entity.id != entity.id)])
+  };
+
+  const updateEntityDetails = (id: string, updater: (ent: Entity) => Entity) => {
+    const entityToUpdate = gameTableEntities.find(e => e.entity.id == id);
+    if (entityToUpdate) {
+      const updated = updater(entityToUpdate.entity);
+      setGameTableEntities(prev => {
+        return [...prev.filter(e => e.entity.id != id), { ...entityToUpdate, entity: updated }]
+      })
+      if (ws == undefined || ws == null) throw Error("Editing without an open websocket!");
+      ws.send(JSON.stringify(new UpdateGameTableEntityDetails(updated.serialize())))
+    } else throw Error("How can we have edited an entity that doesnt exist?!");
   };
 
   const handleRemoveModifier = (id: string) => {
@@ -114,37 +89,43 @@ export function App() {
     margin: "5px"
   };
 
-  return (
-    <div className="app" style={style}>
-      <UserContext value={user}>
-        <TransformWrapper
-          panning={{ excluded: ["draggable-entity"] }}
-          minScale={0.5}
-          maxScale={1}
-          // limitToBounds={false}
-          centerZoomedOut={true}
-          disablePadding={true}
-          minPositionX={0}
-          minPositionY={0}
-          maxPositionX={0}
-          maxPositionY={0}
-        >
-          <GameTable
+  if (user) {
+    return (
+      <div className="app" style={style}>
+        <UserContext value={user}>
+          <TransformWrapper
+            panning={{ excluded: ["draggable-entity"] }}
+            minScale={0.5}
+            maxScale={1}
+            // limitToBounds={false}
+            centerZoomedOut={true}
+            disablePadding={true}
+            minPositionX={0}
+            minPositionY={0}
+            maxPositionX={0}
+            maxPositionY={0}
+          >
+            <GameTable
+              websocket={ws}
+              entities={gameTableEntities}
+              addModifier={toggleSelectedModifier}
+              removeEntity={removeEntityFromGameTable}
+              addEntity={addNewEntityToGameTable}
+              updateEntity={updateEntityDetails}
+            />
+          </TransformWrapper>
+          <RollWidget
             websocket={ws}
-            entities={gameTableEntities}
-            addModifier={toggleSelectedModifier}
-            removeEntity={removeEntityFromGameTable}
+            rollMessages={rollMessages}
+            modifiers={selectedModifiers}
+            handleRemoveModifier={handleRemoveModifier}
+            clearModifiers={() => setSelectedModifiers([])}
           />
-        </TransformWrapper>
-        <RollWidget
-          websocket={ws}
-          rollMessages={rollMessages}
-          modifiers={selectedModifiers}
-          handleRemoveModifier={handleRemoveModifier}
-          clearModifiers={() => setSelectedModifiers([])}
-        />
-      </UserContext>
-    </div>
+        </UserContext>
+      </div>
+    )
+  } else return (
+    <div>LOGIN</div>
   );
 }
 

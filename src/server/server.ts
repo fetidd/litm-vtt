@@ -1,19 +1,9 @@
-import index from "../index.html";
-import { Entity } from "../litm/entity";
-import { Status } from "../litm/status";
-import { Tag } from "../litm/tag";
+import LitmDatabase from "./database";
 import { handleMessage } from "./handler";
+import { handleNewWebSocketConnection } from "./handlers/newWebSocketConnection";
 
-const entities = new Map<string, { entity: Entity, position: { x: number, y: number } }>();
-const freezingTag = new Tag("Freezing cold");
-freezingTag.isScratched = true;
-const onFireTag = new Tag("On fire!");
-const guyTag = new Tag("That guy you met at the tavern last week");
-const drunkStatus = new Status("Drunk", 3);
-entities.set(freezingTag.id, { entity: freezingTag, position: { x: 15, y: 15 } });
-entities.set(onFireTag.id, { entity: onFireTag, position: { x: 30, y: 67 } });
-entities.set(guyTag.id, { entity: guyTag, position: { x: 70, y: 100 } });
-entities.set(drunkStatus.id, { entity: drunkStatus, position: {x: 90, y: 120}});
+const db = new LitmDatabase(":memory:");
+import index from "../index.html";
 
 const server = Bun.serve<{ authToken: string }, {}>({
   port: 3000,
@@ -32,17 +22,11 @@ const server = Bun.serve<{ authToken: string }, {}>({
   websocket: {
     // this is called when a message is received
     async message(ws, message) {
-      handleMessage(ws, message, entities, server);
+      handleMessage(ws, message, db, server);
     },
 
     async open(ws) {
-      console.debug(`WebSocket connection opened: ${ws.remoteAddress}`);
-      ["game-table", "rolls"].forEach(x => ws.subscribe(x));
-      const syncMessage = {
-        type: 'gameTableEntitySync',
-        entities: Array.from(entities.values())
-      };
-      ws.send(JSON.stringify(syncMessage));
+      handleNewWebSocketConnection(ws, db);
     },
 
     async close(code, reason) {

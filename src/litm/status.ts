@@ -15,6 +15,7 @@ export class Status extends ModifierEntity {
       public initialTier: number = 1
     ) {
       super()
+      if (initialTier < 1 || initialTier > 6) throw Error("Tiers must be 1-6");
       this._tiers.push(initialTier);
     }
 
@@ -23,7 +24,9 @@ export class Status extends ModifierEntity {
     }
 
     public set tiers(toAdd: number[]) {
-      this._tiers = toAdd
+      if (toAdd.length) {
+        this._tiers = toAdd
+      } else throw Error("cannot add empty tiers - a status must have at least 1 tier to exist");
     }
 
     public get tiers(): number[] {
@@ -43,12 +46,24 @@ export class Status extends ModifierEntity {
 
     static override deserialize(raw: any): Status {
       try {
-        let ent = new Status(raw.name);
+        if (raw.name == undefined) throw Error("missing name");
+        if (raw.id == undefined) throw Error("missing id");
+        if (raw._tiers == undefined) throw Error("missing _tiers");
+        const ent = new Status(raw.name);
         ent.id = raw.id;
         ent.tiers = raw._tiers; // TODO need a whole fucking day on serializing and deserializing. Ballache!
         return ent;
-      } catch {
-        throw Error(`Failed to deserialize Status from ${raw.toString()}`)
+      } catch (e) {
+        throw Error(`Failed to deserialize Status from ${JSON.stringify(raw)}: ${e}`)
+      }
+    }
+
+    override serialize(): object {
+      return {
+        id: this.id,
+        name: this.name,
+        entityType: this.entityType,
+        _tiers: this._tiers
       }
     }
   

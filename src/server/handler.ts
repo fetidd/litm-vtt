@@ -1,39 +1,23 @@
 import type { ServerWebSocket } from "bun";
-import { ClientMessage, RollRequest, RollResponse, UpdateGameTableEntityPosition } from "../messaging/message";
-import { generateId } from "../utils";
+import { handleUpdateGameTableEntityPosition } from "./handlers/updateGameTableEntityPosition";
+import { handleCreateNewGameTableEntity } from "./handlers/createNewGameTableEntity";
+import { handleRollRequest } from "./handlers/rollRequest";
+import { handleUpdateGameTableEntityDetails } from "./handlers/updateGameTableEntityDetails";
+import type LitmDatabase from "./database";
 
-function handleMessage(
+export function handleMessage(
   ws: ServerWebSocket<{ authToken: string }>,
   message: string | Buffer<ArrayBufferLike>,
-  entities: Map<string, { entity: any, position: { x: number, y: number } }>,
+  db: LitmDatabase,
   server: Bun.Server
 ) {
-  const parsedMessage: ClientMessage = JSON.parse(message.toString());
+  const parsedMessage = JSON.parse(message.toString());
   switch (parsedMessage.type) {
-
-
-    case "updateGameTableEntityPosition":
-      // Handle the updateGameTableEntityPosition message
-      const { id, x, y } = parsedMessage as UpdateGameTableEntityPosition;
-      const entityData = entities.get(id);
-      if (entityData) {
-        entityData.position.x = x;
-        entityData.position.y = y;
-      }
-      server.publish("game-table", JSON.stringify(parsedMessage));
-      break;
-
-
-    case "rollRequest":
-      const { message } = parsedMessage as RollRequest;
-      const response = new RollResponse(generateId(), message);
-      server.publish("rolls", JSON.stringify(response))
-      break;
-
-
+    case "updateGameTableEntityPosition": { handleUpdateGameTableEntityPosition(parsedMessage, db, server); break; }
+    case "updateGameTableEntityDetails":  { handleUpdateGameTableEntityDetails(parsedMessage, db, server); break; }
+    case "createNewGameTableEntity":      { handleCreateNewGameTableEntity(parsedMessage, db, server); break; }
+    case "rollRequest":                   { handleRollRequest(parsedMessage, server); break; }
     default:
-      console.warn(`Unknown message type: ${parsedMessage.type}`);
+      {console.warn(`Unknown message type: ${parsedMessage.type}`);}
   }
 }
-
-export { handleMessage };

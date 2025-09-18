@@ -1,10 +1,7 @@
-import {type EntityType, ModifierEntity} from "./entity";
+import { ModifierEntity } from "./entity";
+import { type EntityType } from './entity';
 
 export class Tag extends ModifierEntity {
-    value = 1;
-    entityType: EntityType = "tag";
-    override canBurn: boolean = true;
-    override canScratch: boolean = true;
     constructor(
         public name: string
     )
@@ -12,14 +9,43 @@ export class Tag extends ModifierEntity {
         super();
     }
 
+    public override get value(): number {
+      return 1
+    }
+
+    public override get canBurn(): boolean {
+      return true
+    }
+
+    public override get entityType(): EntityType {
+      return "tag"
+    }
+
+    public override get canScratch(): boolean {
+      return true
+    }
+
+    
     static override deserialize(raw: any): Tag {
       try {
+        if (raw.name == undefined) throw Error("missing name");
+        if (raw.id == undefined) throw Error("missing id");
+        if (raw.isScratched == undefined) throw Error("missing isScratched");
         let ent = new Tag(raw.name);
         ent.id = raw.id;
         ent.isScratched = raw.isScratched;
         return ent;
-      } catch {
-        throw Error(`Failed to deserialize Tag from ${raw.toString()}`)
+      } catch (e) {
+        throw Error(`Failed to deserialize Tag from ${JSON.stringify(raw)}: ${e}`)
+      }
+    }
+
+    override serialize(): object {
+      return {
+        id: this.id,
+        name: this.name,
+        entityType: this.entityType,
+        isScratched: this.isScratched,
       }
     }
 }
