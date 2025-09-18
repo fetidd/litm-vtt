@@ -30,37 +30,37 @@ export default class LitmDatabase {
 
         this.db.query("CREATE TABLE Tag (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, isScratched boolean NOT NULL);").run();
         for (let i = 0; i < 5; i++) {
-            const id = generateId();
-            this.db.query<{ id: string, name: string, isScratched: boolean}, SQLQueryBindings[]>(`INSERT INTO Tag VALUES ($id, $name, $isScratched);`).run({$id: id, $name: exampleTags[i]!, $isScratched: false});
-            const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${i * 50});`
-            this.db.query(sql2).run();
+            // const id = generateId();
+            // this.db.query<{ id: string, name: string, isScratched: boolean }, SQLQueryBindings[]>(`INSERT INTO Tag VALUES ($id, $name, $isScratched);`).run({ $id: id, $name: exampleTags[i]!, $isScratched: false });
+            // const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${i * 50});`
+            // this.db.query(sql2).run();
         }
 
         this.db.query("CREATE TABLE Status (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, tiers STRING NOT NULL);").run();
         for (let i = 0; i < 5; i++) {
-            const id = generateId();
-            const sql = `INSERT INTO Status VALUES ('${id}', '${exampleStatuses[i]}', '${i}');`;
-            this.db.query<{ id: string, name: string, tiers: string}, SQLQueryBindings[]>(`INSERT INTO Status VALUES ($id, $name, $tiers);`).run({$id: id, $name: exampleStatuses[i]!, $tiers: (i+1).toString()});
-            const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${(i * 50 + 200)})`;
-            this.db.query(sql2).run();
+            // const id = generateId();
+            // const sql = `INSERT INTO Status VALUES ('${id}', '${exampleStatuses[i]}', '${i}');`;
+            // this.db.query<{ id: string, name: string, tiers: string }, SQLQueryBindings[]>(`INSERT INTO Status VALUES ($id, $name, $tiers);`).run({ $id: id, $name: exampleStatuses[i]!, $tiers: (i + 1).toString() });
+            // const sql2 = `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${(i * 50 + 200)})`;
+            // this.db.query(sql2).run();
         }
     }
 
     createNewEntity(entity: Entity) {
         let result: Changes | undefined = undefined;
         switch (entity.entityType) {
-            case "tag": {result = this.insertTag(entity as Tag); break}
-            case "status": {result = this.insertStatus(entity as Status); break}
+            case "tag": { result = this.insertTag(entity as Tag); break }
+            case "status": { result = this.insertStatus(entity as Status); break }
             default: throw Error(`Cannot insert ${entity.entityType}`)
         }
         singleRecordCheck(result);
     }
 
-    insertTag({id, name, isScratched}: Tag): Changes {
+    insertTag({ id, name, isScratched }: Tag): Changes {
         return this.db.query(`INSERT INTO Tag (id, name, isScratched) VALUES ($id, $name, $scratched);`).run({ $id: id, $name: name, $scratched: isScratched ? 1 : 0 });
     }
 
-    insertStatus({id, name, tiers}: Status): Changes {
+    insertStatus({ id, name, tiers }: Status): Changes {
         return this.db.query(`INSERT INTO Status (id, name, tiers) VALUES ($id, $name, $tiers)`).run({ $id: id, $name: name, $tiers: tiers.join(",") });
     }
 
@@ -98,18 +98,18 @@ export default class LitmDatabase {
     updateEntity(entity: Entity) {
         let result: Changes | undefined = undefined;
         switch (entity.entityType) {
-            case "tag": {result = this.updateTag(entity as Tag); break}
-            case "status": {result = this.updateStatus(entity as Status); break}
+            case "tag": { result = this.updateTag(entity as Tag); break }
+            case "status": { result = this.updateStatus(entity as Status); break }
             default: throw Error(`Cannot update ${entity.entityType}`)
         }
         singleRecordCheck(result);
     }
 
-    updateTag({id, name, isScratched}: Tag): Changes {
+    updateTag({ id, name, isScratched }: Tag): Changes {
         return this.db.query(`UPDATE Tag SET name = $name, isScratched = $scratched WHERE id = $id`).run({ $id: id, $name: name, $scratched: isScratched });
     }
 
-    updateStatus({id, name, tiers}: Status): Changes {
+    updateStatus({ id, name, tiers }: Status): Changes {
         return this.db.query(`UPDATE Status SET name = $name, tiers = $tiers WHERE id = $id`).run({ $id: id, $name: name, $tiers: tiers.join(",") });
     }
 
@@ -118,6 +118,20 @@ export default class LitmDatabase {
         singleRecordCheck(result);
     }
 
+    deleteEntity(id: string, type: EntityType) {
+        singleRecordCheck(this.db.query(`DELETE FROM GameTableState WHERE entityId = $id`).run({ $id: id }));
+        singleRecordCheck(this.db.query(`DELETE FROM ${getTableForEntityType(type)} WHERE id = $id`).run({ $id: id }));
+    }
+
+}
+
+function getTableForEntityType(entityType: EntityType): string {
+    switch (entityType) {
+        case "tag": return "Tag";
+        case "status": return "Status";
+        // case "story-theme": return "StoryTheme";
+        default: throw new Error(`${entityType} does not have table`)
+    }
 }
 
 function singleRecordCheck(result: Changes) {

@@ -1,4 +1,4 @@
-import { Entity } from "../litm/entity";
+import { Entity, type EntityType } from "../litm/entity";
 
 export abstract class Message {
     abstract type: string;
@@ -34,6 +34,13 @@ export class UpdateClientGameTableEntityDetails extends ClientMessage {
 export class RollRequest extends ClientMessage {
     type = 'rollRequest';
     constructor(public message: string) {
+        super();
+    }
+}
+
+export class DeleteGameTableEntity extends ClientMessage {
+    type = 'deleteGameTableEntity';
+    constructor(public id: string, public entityType: EntityType) {
         super();
     }
 }

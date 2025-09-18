@@ -6,6 +6,7 @@ import { useState } from "react";
 
 export default function Status({ status, editing, setEditing, updateEntity }: Props) {
     const [statusText, setStatusText] = useState(status.name);
+    console.log(`status render ${statusText}`)
 
     let style: React.CSSProperties = {
         display: "flex",
@@ -21,7 +22,7 @@ export default function Status({ status, editing, setEditing, updateEntity }: Pr
         alignContent: "center",
     };
 
-    let text = <span style={{ textAlign: "center" }}>{statusText.toLowerCase()}-{status.value}</span>
+    let text = <span style={{ textAlign: "center" }}>{status.name.toLowerCase()}-{status.value}</span>
     if (editing) {
         text = (
             <input

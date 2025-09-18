@@ -4,7 +4,7 @@ import { Tag as LitmTag } from "../litm/tag"
 import type { Entity } from "@/litm/entity";
 
 export default function Tag({ tag, editing, setEditing, updateEntity }: TagProps) {
-
+    console.log("tag render")
     const [tagText, setTagText] = useState(tag.name);
 
     const style: React.CSSProperties = {

@@ -4,6 +4,7 @@ import { handleCreateNewGameTableEntity } from "./handlers/createNewGameTableEnt
 import { handleRollRequest } from "./handlers/rollRequest";
 import { handleUpdateGameTableEntityDetails } from "./handlers/updateGameTableEntityDetails";
 import type LitmDatabase from "./database";
+import { handleDeleteGameTableEntity } from "./handlers/deleteGameTableEntity";
 
 export function handleMessage(
   ws: ServerWebSocket<{ authToken: string }>,
@@ -17,6 +18,7 @@ export function handleMessage(
     case "updateGameTableEntityDetails":  { handleUpdateGameTableEntityDetails(parsedMessage, db, server); break; }
     case "createNewGameTableEntity":      { handleCreateNewGameTableEntity(parsedMessage, db, server); break; }
     case "rollRequest":                   { handleRollRequest(parsedMessage, server); break; }
+    case "deleteGameTableEntity":         { handleDeleteGameTableEntity(parsedMessage, db, server); break}
     default:
       {console.warn(`Unknown message type: ${parsedMessage.type}`);}
   }

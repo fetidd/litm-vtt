@@ -34,50 +34,17 @@ export function App() {
     webSocket.onmessage = function (event) {
       const message = JSON.parse(event.data);
       switch (message.type) {
-        case 'updateGameTableEntityPosition': {handleUpdateClientGameTableEntityPosition(message, setGameTableEntities); break;}
-        case 'updateGameTableEntityDetails':  {handleUpdateClientGameTableEntityDetails(message, setGameTableEntities); break;}
-        case 'gameTableEntitySync':           {handleClientGameTableEntitySync(message, setGameTableEntities); break;}
-        case 'rollResponse':                  {handleRollResponse(message, setRollMessages); break;}
-        default:                              {console.warn(`Unknown message type: ${message.type}`);}
+        case 'updateGameTableEntityPosition': { handleUpdateClientGameTableEntityPosition(message, setGameTableEntities); break; }
+        case 'updateGameTableEntityDetails': { handleUpdateClientGameTableEntityDetails(message, setGameTableEntities); break; }
+        case 'gameTableEntitySync': { handleClientGameTableEntitySync(message, setGameTableEntities); break; }
+        case 'rollResponse': { handleRollResponse(message, setRollMessages); break; }
+        default: { console.warn(`Unknown message type: ${message.type}`); }
       }
     };
     return () => {
       webSocket.close();
     };
   }, []);
-
-  const addSelectedModifier = (entity: ModifierEntity, polarity: 'add' | 'subtract', isBurned: boolean) => {
-    setSelectedModifiers(prev => {
-      if (!prev.find(e => e.entity.id === entity.id)) {
-        return [...prev, { entity, isBurned, polarity }];
-      }
-      return prev;
-    });
-  };
-
-  const addNewEntityToGameTable = (entity: Entity, position: { x: number, y: number }) => {
-    setGameTableEntities(prev => [...prev, { entity: entity, position: position }])
-  }
-
-  const removeEntityFromGameTable = (entity: Entity) => {
-    setGameTableEntities(prev => [...prev.filter(e => e.entity.id != entity.id)])
-  };
-
-  const updateEntityDetails = (id: string, updater: (ent: Entity) => Entity) => {
-    const entityToUpdate = gameTableEntities.find(e => e.entity.id == id);
-    if (entityToUpdate) {
-      const updated = updater(entityToUpdate.entity);
-      setGameTableEntities(prev => {
-        return [...prev.filter(e => e.entity.id != id), { ...entityToUpdate, entity: updated }]
-      })
-      if (ws == undefined || ws == null) throw Error("Editing without an open websocket!");
-      ws.send(JSON.stringify(new UpdateGameTableEntityDetails(updated.serialize())))
-    } else throw Error("How can we have edited an entity that doesnt exist?!");
-  };
-
-  const handleRemoveModifier = (id: string) => {
-    setSelectedModifiers(prev => prev.filter(e => e.entity.id !== id));
-  };
 
   const style: React.CSSProperties = {
     display: "flex",
@@ -97,28 +64,21 @@ export function App() {
             panning={{ excluded: ["draggable-entity"] }}
             minScale={1}
             maxScale={1}
-            // limitToBounds={false}
             centerZoomedOut={true}
             disablePadding={true}
-            minPositionX={0}
-            minPositionY={0}
-            maxPositionX={0}
-            maxPositionY={0}
           >
             <GameTable
               websocket={ws}
-              entities={gameTableEntities}
-              addModifier={addSelectedModifier}
-              removeEntity={removeEntityFromGameTable}
-              addEntity={addNewEntityToGameTable}
-              updateEntity={updateEntityDetails}
+              gameTableEntities={gameTableEntities}
+              setGameTableEntities={setGameTableEntities}
+              addModifier={(entity: ModifierEntity, polarity: 'add' | 'subtract', isBurned: boolean) => setSelectedModifiers(prev => (!prev.find(e => e.entity.id === entity.id)) ? [...prev, { entity, isBurned, polarity }] : prev)}
             />
           </TransformWrapper>
           <RollWidget
             websocket={ws}
             rollMessages={rollMessages}
             modifiers={selectedModifiers}
-            handleRemoveModifier={handleRemoveModifier}
+            handleRemoveModifier={(id: string) => setSelectedModifiers(prev => prev.filter(e => e.entity.id !== id))}
             clearModifiers={() => setSelectedModifiers([])}
           />
         </UserContext>
