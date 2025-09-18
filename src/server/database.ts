@@ -27,4 +27,6 @@ export default class LitmDatabase {
         return []
     }
 
+    updateEntity(entity: Entity) {}
+
 }

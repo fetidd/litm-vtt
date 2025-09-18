@@ -1,5 +1,6 @@
 import type { ServerWebSocket } from 'bun';
 import type LitmDatabase from '../database';
+import type { EntityPositionData } from '@/types';
 
 
 export function handleNewWebSocketConnection(
@@ -8,9 +9,10 @@ export function handleNewWebSocketConnection(
 ) {
     console.debug(`WebSocket connection opened: ${ws.remoteAddress}`);
     ["game-table", "rolls"].forEach(x => ws.subscribe(x));
-    const syncMessage = {
+    const entitiesToSync: EntityPositionData[] = db.getAllEntitiesWithPositions();
+    const syncMessage = { // TODO refactor out to DRY
         type: 'gameTableEntitySync',
-        entities: [{ entity: { serialize: () => 123 }, position: { x: 10, y: 10 } }].map(data => { return { ...data, entity: data.entity.serialize() } })
+        entities: entitiesToSync
     };
     ws.send(JSON.stringify(syncMessage));
 }

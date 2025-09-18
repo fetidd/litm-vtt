@@ -1,6 +1,6 @@
+import { deserializeRawEntity } from "@/litm/helpers";
 import type { UpdateClientGameTableEntityDetails } from "@/messaging/message";
 import type { EntityPositionData, StateSetter } from "@/types";
-import { deserializeRawEntity } from "@/utils";
 
 export function handleUpdateClientGameTableEntityDetails(
     message: UpdateClientGameTableEntityDetails, 

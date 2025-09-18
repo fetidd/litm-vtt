@@ -1,7 +1,7 @@
 import type { CreateNewGameTableEntity } from "@/messaging/message";
-import { deserializeRawEntity } from "@/utils";
 import type LitmDatabase from "../database";
 import type { EntityPositionData } from "@/types";
+import { deserializeRawEntity } from "@/litm/helpers";
 
 export function handleCreateNewGameTableEntity(
   { entity, x, y }: CreateNewGameTableEntity, 
