@@ -12,7 +12,7 @@ export function handleNewWebSocketConnection(
     const entitiesToSync: EntityPositionData[] = db.getAllEntitiesWithPositions();
     const syncMessage = { // TODO refactor out to DRY
         type: 'gameTableEntitySync',
-        entities: entitiesToSync
+        entities: entitiesToSync.map(data => {return { ...data, entity: data.entity.serialize()}})
     };
     ws.send(JSON.stringify(syncMessage));
 }

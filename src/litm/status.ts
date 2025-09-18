@@ -1,7 +1,11 @@
 import { ModifierEntity, type EntityType } from "./entity";
 
 export class Status extends ModifierEntity {
-    override canBurn = false;
+  
+    public override get canBurn(): boolean {
+      return true
+    }
+
     override entityType: EntityType = 'status';
 
     private _tiers: number[] = [];

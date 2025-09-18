@@ -8,10 +8,6 @@ export function handleUpdateGameTableEntityPosition(
   server: Bun.Server) 
 {
   // Handle the updateGameTableEntityPosition message
-  const entityData = entities.get(id);
-  if (entityData) {
-    entityData.position.x = x;
-    entityData.position.y = y;
-  }
+  const entityData = db.updateEntityPosition(id, x, y);
   server.publish("game-table", JSON.stringify(new UpdateGameTableEntityPosition(id, x, y)));
 }

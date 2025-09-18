@@ -1,9 +1,9 @@
+import index from "../index.html";
 import LitmDatabase from "./database";
 import { handleMessage } from "./handler";
 import { handleNewWebSocketConnection } from "./handlers/newWebSocketConnection";
 
-const db = new LitmDatabase(":memory:");
-import index from "../index.html";
+const db = new LitmDatabase("test.db");
 
 const server = Bun.serve<{ authToken: string }, {}>({
   port: 3000,

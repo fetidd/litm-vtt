@@ -25,7 +25,7 @@ export class CreateNewGameTableEntity extends ClientMessage {
 }
 
 export class UpdateClientGameTableEntityDetails extends ClientMessage {
-    type = 'updateGameTableDetails';
+    type = 'updateGameTableEntityDetails';
     constructor(public entity: Entity) {
         super();
     }
@@ -61,7 +61,7 @@ export class UpdateGameTableEntityPosition extends ServerMessage {
 
 
 export class UpdateGameTableEntityDetails extends ServerMessage {
-    type = 'updateGameTableDetails';
+    type = 'updateGameTableEntityDetails';
     constructor(public entity: Entity) {
         super();
     }

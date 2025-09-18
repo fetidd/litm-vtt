@@ -9,5 +9,5 @@ export function handleUpdateGameTableEntityDetails(
 ) {
     const deserialized = deserializeRawEntity(entity);
     const data = db.updateEntity(deserialized);
-    server.publish("game-table", JSON.stringify(new UpdateClientGameTableEntityDetails(entity.serialize())));
+    server.publish("game-table", JSON.stringify(new UpdateClientGameTableEntityDetails(entity)));
 }
