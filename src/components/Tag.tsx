@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import constant from "../constants"
 import { Tag as LitmTag } from "../litm/tag"
 import type { Entity } from "@/litm/entity";
 
 export default function Tag({ tag, editing, setEditing, updateEntity }: TagProps) {
-    console.log("tag render")
     const [tagText, setTagText] = useState(tag.name);
 
     const style: React.CSSProperties = {
@@ -20,9 +19,19 @@ export default function Tag({ tag, editing, setEditing, updateEntity }: TagProps
         color: `${tag.isScratched ? "#25252560" : "#333"}`, // TODO add scratched color to constant?
         alignContent: "center",
     }
-    let text = <span style={{ textAlign: "center" }}>{tag.name}</span>;
+    let tagObj = <span style={{ textAlign: "center" }}>{tag.name}</span>;
+
+    function performUpdate() {
+        setEditing(undefined);
+        updateEntity(tag.id, tag => {
+            tag.name = tagText;
+            console.log(tagText)
+            return tag;
+        })
+    }
+
     if (editing) {
-        text = (
+        tagObj = (
             <input
                 style={{
                     background: "transparent",
@@ -31,14 +40,14 @@ export default function Tag({ tag, editing, setEditing, updateEntity }: TagProps
                     color: "black",
                     width: "fit"
                 }}
+                placeholder="tag name"
+                autoFocus
                 onChange={e => setTagText(e.target.value)}
-                onKeyDown={e => {if (e.key == "Enter") {
-                    setEditing(undefined);
-                    updateEntity(tag.id, tag => {
-                        tag.name = tagText;
-                        return tag;
-                    })
-                }}}
+                onKeyDown={e => {
+                    if (e.key == "Enter") {
+                        performUpdate()
+                    }
+                }}
                 value={tagText}
             />
         )
@@ -46,7 +55,7 @@ export default function Tag({ tag, editing, setEditing, updateEntity }: TagProps
 
     return (
         <div style={style}>
-            {text}
+            {tagObj}
         </div>
     )
 }

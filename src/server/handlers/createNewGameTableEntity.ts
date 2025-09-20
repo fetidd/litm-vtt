@@ -9,7 +9,6 @@ export function handleCreateNewGameTableEntity(
   server: Bun.Server
 ) {
   const deserialized = deserializeRawEntity(entity);
-  console.log(deserialized)
   db.createNewEntity(deserialized);
   db.addEntityToGameBoard(deserialized, x, y);
   const entitiesToSync: EntityPositionData[] = db.getAllEntitiesWithPositions();

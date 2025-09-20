@@ -57,7 +57,6 @@ export function ContextMenuWrapper({ menu, children }: ContextMenuWrapperProps) 
                         zIndex: 1000,
                         background: 'transparent',
                         boxShadow: '4 2px 8px rgba(0,0,0,0.15)',
-                        minWidth: 120,
                         cursor: "pointer"
                     }}
                     onClick={closeContextMenu}

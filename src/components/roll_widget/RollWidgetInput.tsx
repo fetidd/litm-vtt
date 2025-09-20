@@ -1,12 +1,21 @@
 import constants from '@/constants';
 import type Modifier from '../../litm/modifier';
-import { Tag } from '../../litm/tag';
 
 export default function RollWidgetInput({
     selectedModifiers,
     handleModifierRemove,
     onRoll
 }: Props) {
+    const totalModifier: number = selectedModifiers.map(mod => {
+        if (mod.polarity === "add") {
+            return (mod.isBurned ? mod.entity.value * 3 : mod.entity.value)
+        } else {
+            return mod.entity.value * -1
+        }
+    }).reduce((prev, curr) => {
+        return prev + curr
+    }, 0);
+    const totalModifierText = `${totalModifier > 0 ? "+": ""}${totalModifier}`;
     return (
         <div
                 id="roll-widget-input"
@@ -18,7 +27,7 @@ export default function RollWidgetInput({
                     flexDirection: "column",
                     gap: "8px",
                 }}
-            >
+            >   
                 <strong>Modifiers:</strong>
                 <div>
                     {selectedModifiers.length > 0 && (
@@ -29,16 +38,17 @@ export default function RollWidgetInput({
                                     onClick={() => handleModifierRemove(mod.entity.id)}
                                     style={{
                                         background: `${mod.entity.entityType == "tag" ? constants.TAG_COLOR : constants.STATUS_COLOR}`,
-                                        border: "1px solid #rgba(219, 42, 10, 1)",
+                                        border: "1px solid #rgba(255, 38, 0, 1)",
                                         color: "#333",
                                         borderRadius: "4px",
                                         padding: "2px 8px",
                                         marginRight: "4px",
                                         fontSize: "0.95rem",
                                         display: "inline-block",
+                                        cursor: "pointer"
                                     }}
                                 >
-                                    {`${mod.entity.name}`}
+                                    {`${mod.entity.name} ${mod.polarity === "add" ? "+" : "-"}${mod.isBurned ? mod.entity.value*3 : mod.entity.value}`}
                                 </span>
                             ))}
                         </div>
@@ -46,7 +56,7 @@ export default function RollWidgetInput({
                 </div>
                 <button
                     style={{
-                        background: "#68ff03ff",
+                        background: "#af3814ff",
                         border: "none",
                         borderRadius: "4px",
                         padding: "8px",
@@ -57,7 +67,7 @@ export default function RollWidgetInput({
                     }}
                     onClick={onRoll}
                 >
-                    Roll
+                    {`Roll${totalModifier ? ` ${totalModifierText}` : ''}`}
                 </button>
             </div>
     );

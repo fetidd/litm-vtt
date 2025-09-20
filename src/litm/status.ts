@@ -5,6 +5,9 @@ export class Status extends ModifierEntity {
     public override get canBurn(): boolean {
       return false
     }
+    public override get canScratch(): boolean {
+      return false
+    }
 
     override entityType: EntityType = 'status';
 

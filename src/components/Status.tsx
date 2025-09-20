@@ -2,11 +2,10 @@ import { Entity } from "@/litm/entity";
 import constant from "../constants"
 import { Status as LitmStatus } from "../litm/status"
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Status({ status, editing, setEditing, updateEntity }: Props) {
     const [statusText, setStatusText] = useState(status.name);
-    console.log(`status render ${statusText}`)
 
     let style: React.CSSProperties = {
         display: "flex",
@@ -22,6 +21,14 @@ export default function Status({ status, editing, setEditing, updateEntity }: Pr
         alignContent: "center",
     };
 
+    function performUpdate() {
+        setEditing(undefined);
+        updateEntity(status.id, status => {
+            status.name = statusText;
+            return status;
+        })
+    }
+
     let text = <span style={{ textAlign: "center" }}>{status.name.toLowerCase()}-{status.value}</span>
     if (editing) {
         text = (
@@ -33,20 +40,18 @@ export default function Status({ status, editing, setEditing, updateEntity }: Pr
                     color: "black",
                     width: "fit"
                 }}
+                autoFocus
                 onChange={e => setStatusText(e.target.value)}
                 onKeyDown={e => {
                     if (e.key == "Enter") {
-                        setEditing(undefined);
-                        updateEntity(status.id, tag => {
-                            tag.name = statusText;
-                            return tag;
-                        })
+                        performUpdate()
                     }
                 }}
                 value={statusText}
             />
         )
     }
+
     return (
         <div style={style}>
             {text}
