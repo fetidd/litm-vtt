@@ -61,7 +61,12 @@ export function App() {
       <div className="app" style={style}>
         <UserContext value={user}>
           <TransformWrapper
-            panning={{ excluded: ["draggable-entity"] }}
+            panning={{ 
+              excluded: ["draggable-entity"],
+              allowLeftClickPan: false,
+              allowRightClickPan: false,
+              velocityDisabled: true
+            }}
             minScale={1}
             maxScale={1}
             centerZoomedOut={true}

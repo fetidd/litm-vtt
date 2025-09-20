@@ -8,7 +8,6 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import { DraggableEntity } from "./DraggableEntity";
 import { Entity, ModifierEntity } from "../../litm/entity";
-import { ContextMenuWrapper } from "../context_menu/ContextMenuWrapper";
 import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 import { CreateNewGameTableEntity, DeleteGameTableEntity, UpdateGameTableEntityDetails, UpdateGameTableEntityPosition } from "../../messaging/message";
 import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
@@ -169,18 +168,8 @@ export function GameTable({
                     wrapperStyle={{ height: "100%", width: "100%" }}
                 // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
                 >
-                    <ContextMenuWrapper menu={<GameTableContextMenu
-                        createNewGameBoardTag={createNewGameBoardTag}
-                        createNewGameBoardStatus={createNewGameBoardStatus}
-                        currentlyEditing={editing != undefined && editing.length > 0}
-                        stopEditing={() => setEditing(undefined)}
-                    />} >
-
                     <div
                         id="game-board"
-                        onContextMenu={e => {
-                            e.preventDefault();
-                        }}
                         style={{
                             height: `${tableSize.height}px`,
                             width: `${tableSize.width}px`,
@@ -198,7 +187,6 @@ export function GameTable({
                                 onMouseDown={() => setLastMovedEntityId(entityData.entity.id)}
                                 style={{ position: "absolute" }}
                             >
-                                <ContextMenuWrapper menu={getContextMenuForEntity(entityData.entity)}>
                                     <DraggableEntity
                                         key={entityData.entity.id}
                                         id={entityData.entity.id}
@@ -211,11 +199,9 @@ export function GameTable({
                                         updateEntity={updateEntity}
                                         setEditingEntity={setEditing}
                                     />
-                                </ContextMenuWrapper>
                             </div>
                         ))}
                     </div>
-                </ContextMenuWrapper>
             </TransformComponent>
         </div>
             </DndContext >
