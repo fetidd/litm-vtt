@@ -13,7 +13,8 @@ import { handleUpdateClientGameTableEntityPosition } from "./handlers/updateClie
 import { handleClientGameTableEntitySync } from "./handlers/clientGameTableEntitySync";
 import { UpdateGameTableEntityDetails } from "./messaging/message";
 import { handleUpdateClientGameTableEntityDetails } from "./handlers/updateClientGameTableEntityDetails";
-
+import { Item, Menu, Separator, Submenu, useContextMenu, type TriggerEvent } from "react-contexify";
+import "react-contexify/dist/ReactContexify.css";
 
 export const UserContext: Context<User | null> = createContext(null as User | null);
 
@@ -56,12 +57,21 @@ export function App() {
     margin: "5px"
   };
 
+  const MENU_ID = "menu-id";
+  const { show } = useContextMenu({id: MENU_ID});
+  function displayContextMenu(e: TriggerEvent) {
+    show({
+      event: e,
+      id: MENU_ID
+    });
+  }
+
   if (user) {
     return (
-      <div className="app" style={style}>
+      <div className="app" style={style} onContextMenu={displayContextMenu}>
         <UserContext value={user}>
           <TransformWrapper
-            panning={{ 
+            panning={{
               excluded: ["draggable-entity"],
               allowLeftClickPan: false,
               allowRightClickPan: false,
@@ -87,7 +97,11 @@ export function App() {
             clearModifiers={() => setSelectedModifiers([])}
           />
         </UserContext>
+        <Menu id={MENU_ID}>
+          <Item disabled>Top level</Item>
+        </Menu>
       </div>
+
     )
   } else return (
     <div>LOGIN</div>

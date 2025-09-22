@@ -8,15 +8,15 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import { DraggableEntity } from "./DraggableEntity";
 import { Entity, ModifierEntity } from "../../litm/entity";
-import ModifierContextMenu from "../context_menu/ModifierContextMenu";
 import { CreateNewGameTableEntity, DeleteGameTableEntity, UpdateGameTableEntityDetails, UpdateGameTableEntityPosition } from "../../messaging/message";
 import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import constant from "../../constants";
-import GameTableContextMenu from "../context_menu/GameTableContextMenu";
 import { Tag as LitmTag } from "../../litm/tag";
-import { Status as LitmStatus } from "../../litm/status";
+import { Status as LitmStatus, Status } from "../../litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
-import BasicContextMenu from "../context_menu/BasicContextMenu";
+import { Item, Menu, Submenu, useContextMenu, type ItemParams, type TriggerEvent } from "react-contexify";
+import { ArrowDownIcon, FireIcon, PencilIcon, PlusIcon, StrikethroughIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { MinusIcon } from "@heroicons/react/24/solid";
 
 type GameTableProps = {
     websocket: WebSocket | null,
@@ -104,34 +104,14 @@ export function GameTable({
         websocket.send(JSON.stringify(new DeleteGameTableEntity(entity.id, entity.entityType)));
     }
 
-    function getContextMenuForEntity(entity: Entity) {
-        if (entity.canModify) {
-            return <ModifierContextMenu
-                entity={entity as ModifierEntity}
-                addModifier={addModifier}
-                removeEntity={removeEntityFromGameBoard}
-                setEditing={setEditing}
-                updateEntity={updateEntity}
-            />;
-        }
-        return <BasicContextMenu
-            entity={entity as Entity}
-            removeEntity={removeEntityFromGameBoard}
-        />;
-    }
-
-    const createNewGameBoardTag = (e: React.MouseEvent) => {
-        const where = { x: e.clientX, y: e.clientY };
-        // TODO open a modal to enter tag details, or extend the context menu with an input?
+    const createNewGameBoardTag = (where: { x: number, y: number }) => {
         const tag = new LitmTag("");
         setEditing(tag.id)
         setGameTableEntities(prev => [...prev, { entity: tag, position: where }])
         createNewGameTableEntity(tag, where.x, where.y)
     }
 
-    const createNewGameBoardStatus = (e: React.MouseEvent, tier: number = 1) => {
-        const where = { x: e.clientX, y: e.clientY };
-        // open a modal to enter status details, or extend the context menu with an input?
+    const createNewGameBoardStatus = (where: { x: number, y: number }, tier: number = 1) => {
         const status = new LitmStatus("", tier);
         setEditing(status.id)
         setGameTableEntities(prev => [...prev, { entity: status, position: where }])
@@ -148,63 +128,93 @@ export function GameTable({
         }
     });
 
-    return (
+    const { show } = useContextMenu({ id: "game-table-menu" });
+    function displayContextMenu(e: TriggerEvent) {
+        e.stopPropagation()
+        show({
+            event: e,
+            id: "game-table-menu"
+        });
+    }
+    function handleItemClick({ id, event, triggerEvent, data, props }: ItemParams<{}, { tier?: number }>) {
+        switch (id) {
+            case "new-tier": { createNewGameBoardTag({ x: triggerEvent.pageX, y: triggerEvent.pageY }); break }
+            case "new-status": { createNewGameBoardStatus({ x: triggerEvent.pageX, y: triggerEvent.pageY }, data!.tier); break }
+        }
+    }
 
-        <DndContext onDragEnd={handleDragEnd} sensors={[mouseSensor]}>
-            <div
-                ref={setNodeRef}
-                style={{
-                    position: "relative",
-                    width: "80vw",
-                    height: "98vh",
-                    border: "2px solid #68ff03ff",
-                    borderRadius: "4px",
-                    boxSizing: "border-box",
-                    background: "rgba(37, 41, 58, 1)",
-                    overflow: "hidden"
-                }}
-            >
-                <TransformComponent
-                    wrapperStyle={{ height: "100%", width: "100%" }}
-                // contentStyle={{ border: "2px solid #ffffffff", padding: "5px" }}
+    return (
+        <>
+            <DndContext onDragEnd={handleDragEnd} sensors={[mouseSensor]}>
+                <div
+                    ref={setNodeRef}
+                    style={{
+                        position: "relative",
+                        width: "80vw",
+                        height: "98vh",
+                        border: "2px solid #68ff03ff",
+                        borderRadius: "4px",
+                        boxSizing: "border-box",
+                        background: "rgba(37, 41, 58, 1)",
+                        overflow: "hidden"
+                    }}
                 >
-                    <div
-                        id="game-board"
-                        style={{
-                            height: `${tableSize.height}px`,
-                            width: `${tableSize.width}px`,
-                            background: "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
-                            backgroundRepeat: "repeat",
-                            backgroundSize: "60px 60px",
-                            backgroundPosition: "top left",
-                            // overflow: "hidden" 
-                        }}
+                    <TransformComponent
+                        wrapperStyle={{ height: "100%", width: "100%" }}
                     >
-                        {gameTableEntities.map((entityData) => (
-                            <div
-                                className="draggable-div"
-                                key={entityData.entity.id}
-                                onMouseDown={() => setLastMovedEntityId(entityData.entity.id)}
-                                style={{ position: "absolute" }}
-                            >
+                        <div
+                            id="game-board"
+                            style={{
+                                height: `${tableSize.height}px`,
+                                width: `${tableSize.width}px`,
+                                background: "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
+                                backgroundRepeat: "repeat",
+                                backgroundSize: "60px 60px",
+                                backgroundPosition: "top left",
+                            }}
+                            onContextMenu={displayContextMenu}
+                        >
+                            {gameTableEntities.map((entityData) => (
+                                <div
+                                    className="draggable-div"
+                                    key={entityData.entity.id}
+                                    onMouseDown={() => setLastMovedEntityId(entityData.entity.id)}
+                                    style={{ position: "absolute" }}
+                                >
                                     <DraggableEntity
                                         key={entityData.entity.id}
                                         id={entityData.entity.id}
-                                        entity={entityData.entity}
-                                        x={entityData.position.x}
-                                        y={entityData.position.y}
+                                        ept={entityData}
                                         zIndex={lastMovedEntityId === entityData.entity.id ? constant.GAME_TABLE_SELECTED_ENTITY_ZINDEX : constant.GAME_TABLE_ZINDEX}
                                         bounds={{ minX: 0, minY: 0, maxX: tableSize.width, maxY: tableSize.height }}
                                         editable={entityData.entity.id === editing}
                                         updateEntity={updateEntity}
                                         setEditingEntity={setEditing}
+                                        addModifier={addModifier}
+                                        removeEntity={removeEntityFromGameBoard}
                                     />
-                            </div>
-                        ))}
-                    </div>
-            </TransformComponent>
-        </div>
+                                </div>
+                            ))}
+                        </div>
+                    </TransformComponent>
+                </div>
             </DndContext >
+
+            <Menu id="game-table-menu">
+                <Item id="new-tier" onClick={e => handleItemClick(e)}>New tag</Item>
+                <Submenu label="New status">
+                    {[1, 2, 3, 4, 5, 6].map(n => {
+                        return <Item id="new-status" data={{ tier: n }} onClick={handleItemClick}>{`Tier ${n}`}</Item>
+                    })}
+                </Submenu>
+            </Menu>
+        </>
     );
+}
+
+const iconStyle: React.CSSProperties = {
+    width: "20px",
+    height: "20px",
+    marginRight: "8px"
 }
 
