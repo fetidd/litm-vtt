@@ -107,6 +107,8 @@ export function GameTable({
     const createNewGameBoardTag = (where: { x: number, y: number }) => {
         const tag = new LitmTag("");
         setEditing(tag.id)
+        where.x -= transformContext.transformState.positionX;
+        where.y -= transformContext.transformState.positionY;
         setGameTableEntities(prev => [...prev, { entity: tag, position: where }])
         createNewGameTableEntity(tag, where.x, where.y)
     }
@@ -114,6 +116,8 @@ export function GameTable({
     const createNewGameBoardStatus = (where: { x: number, y: number }, tier: number = 1) => {
         const status = new LitmStatus("", tier);
         setEditing(status.id)
+        where.x -= transformContext.transformState.positionX;
+        where.y -= transformContext.transformState.positionY;
         setGameTableEntities(prev => [...prev, { entity: status, position: where }])
         createNewGameTableEntity(status, where.x, where.y)
     }
