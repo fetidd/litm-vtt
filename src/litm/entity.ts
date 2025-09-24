@@ -4,7 +4,8 @@ export type EntityType = "tag" | "story-theme" | "hero-theme" | "status" | "hero
 
 export abstract class Entity {
     abstract entityType: EntityType;
-    abstract name: string;
+    name: string = "";
+    owner: string = "";
     isScratched: boolean = false;
 
     constructor(public id: string = generateId()) {
@@ -23,7 +24,7 @@ export abstract class Entity {
         throw Error("not implemented!")
     }
 
-    public serialize(): any {
+    public serialize(): object {
         throw Error("not implemented!")
     }
 }

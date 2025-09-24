@@ -1,5 +1,5 @@
 import { type EntityType, ModifierEntity } from "./entity";
-import type { Tag } from "./tag";
+import { Tag } from "./tag";
 import type { Might } from "./might";
 
 export abstract class Theme extends ModifierEntity {
@@ -16,14 +16,14 @@ export abstract class Theme extends ModifierEntity {
     }
 
     override isScratched: boolean = false;
-
-    tags: Tag[] = [];
+    otherTags: Tag[] = [];
     weaknessTags: Tag[] = [];
     description: string = "";
 
-    constructor(public name: string) {
+    constructor() {
         super()
     }
+
 }
 
 export class StoryTheme extends Theme {
@@ -35,15 +35,20 @@ export class StoryTheme extends Theme {
       try {
         if (raw.name == undefined) throw Error("missing name");
         if (raw.id == undefined) throw Error("missing id");
-        const ent = new StoryTheme(raw.name);
+        const ent = StoryTheme.blank();
         ent.id = raw.id;
-        ent.tags = raw.tags || [];
+        ent.name = raw.name;
+        ent.otherTags = raw.otherTags || [];
         ent.weaknessTags = raw.weaknessTags || [];
         ent.description = raw.description || "";
         return ent;
       } catch (e) {
         throw Error(`Failed to deserialize StoryTheme from ${JSON.stringify(raw)}: ${e}`)
       }
+    }
+
+    static blank() {
+      return new StoryTheme()
     }
 }
 
@@ -63,12 +68,16 @@ export class HeroTheme extends Theme {
       return "hero-theme"
     }
 
+    public get maxAdvancement(): number {
+      return 3
+    }
+
     _improve: number = 0;
     public get improve() {
       return this._improve
     }
     public set improve(n: number) {
-      if (n < 0 || n > 5) throw Error("Improve must be 0-5")
+      if (n < 0 || n > this.maxAdvancement) throw Error(`Improve must be 0-${this.maxAdvancement}`)
         this._improve = n;
     }
 
@@ -77,7 +86,7 @@ export class HeroTheme extends Theme {
       return this._milestone
     }
     public set milestone(n: number) {
-      if (n < 0 || n > 5) throw Error("Milestone must be 0-5")
+      if (n < 0 || n > this.maxAdvancement) throw Error(`Milestone must be 0-${this.maxAdvancement}`)
         this._milestone = n;
     }
 
@@ -86,15 +95,21 @@ export class HeroTheme extends Theme {
       return this._abandon
     }
     public set abandon(n: number) {
-      if (n < 0 || n > 5) throw Error("Abandon must be 0-5")
+      if (n < 0 || n > this.maxAdvancement) throw Error(`Abandon must be 0-${this.maxAdvancement}`)
         this._abandon = n;
     }
 
+    might: Might = "origin";
+    type: ThemeType | undefined = undefined;
     quest: string = "";
     specialImprovements: string[] = [];
 
-    constructor(public override name: string, public type: ThemeType, public might: Might) {
-        super(name)
+    private constructor() {
+        super()
+    }
+
+    static blank() {
+      return new HeroTheme()
     }
 
     static override deserialize(raw: any): HeroTheme {
@@ -103,19 +118,40 @@ export class HeroTheme extends Theme {
         if (raw.id == undefined) throw Error("missing id");
         if (raw.might == undefined) throw Error("missing might");
         if (raw.type == undefined) throw Error("missing type");
-        const ent = new HeroTheme(raw.name, raw.type, raw.might);
+        const ent = HeroTheme.blank();
         ent.id = raw.id;
-        ent.tags = raw.tags || [];
-        ent.weaknessTags = raw.weaknessTags || [];
-        ent.description = raw.description || "";
-        ent.improve = raw.improve || 0;
-        ent.milestone = raw.milestone || 0;
-        ent.abandon = raw.abandon || 0;
-        ent.quest = raw.quest || "";
-        ent.specialImprovements = raw.specialImprovements || [];
+        ent.name = raw.name;
+        ent.might = raw.might;
+        ent.type = raw.type;
+        ent.otherTags = raw.otherTags.map((t: any) => Tag.deserialize(t));
+        ent.weaknessTags = raw.weaknessTags.map((t: any) => Tag.deserialize(t));
+        ent.description = raw.description;
+        ent.improve = raw.improve;
+        ent.milestone = raw.milestone;
+        ent.abandon = raw.abandon;
+        ent.quest = raw.quest;
+        ent.specialImprovements = raw.specialImprovements;
         return ent;
       } catch (e){
         throw Error(`Failed to deserialize HeroTheme from ${raw.toString()}: ${e}`)
+      }
+    }
+
+    override serialize(): object {
+      return {
+        id: this.id,
+        name: this.name,
+        entityType: this.entityType,
+        otherTags: this.otherTags.map(t => t.serialize()),
+        weaknessTags: this.weaknessTags.map(t => t.serialize()),
+        might: this.might,
+        type: this.type,
+        milestone: this.milestone,
+        abandon: this.abandon,
+        improve: this.improve,
+        quest: this.quest,
+        description: this.description,
+        specialImprovements: this.specialImprovements,
       }
     }
 }

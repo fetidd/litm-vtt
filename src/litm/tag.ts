@@ -2,13 +2,6 @@ import { ModifierEntity } from "./entity";
 import { type EntityType } from './entity';
 
 export class Tag extends ModifierEntity {
-    constructor(
-        public name: string
-    )
-    {
-        super();
-    }
-
     public override get value(): number {
       return 1
     }
@@ -25,15 +18,18 @@ export class Tag extends ModifierEntity {
       return true
     }
 
+    static blank() {return new Tag()}
+
     
     static override deserialize(raw: any): Tag {
       try {
         if (raw.name == undefined) throw Error("missing name");
         if (raw.id == undefined) throw Error("missing id");
         if (raw.isScratched == undefined) throw Error("missing isScratched");
-        let ent = new Tag(raw.name);
+        let ent = Tag.blank();
+        ent.name = raw.name;
         ent.id = raw.id;
-        ent.isScratched = raw.isScratched;
+        ent.isScratched = Boolean(raw.isScratched);
         return ent;
       } catch (e) {
         throw Error(`Failed to deserialize Tag from ${JSON.stringify(raw)}: ${e}`)

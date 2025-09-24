@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     DndContext,
     useDroppable,
@@ -9,14 +9,12 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import { DraggableEntity } from "./DraggableEntity";
 import { Entity, ModifierEntity } from "../../litm/entity";
 import { CreateNewGameTableEntity, DeleteGameTableEntity, UpdateGameTableEntityDetails, UpdateGameTableEntityPosition } from "../../messaging/message";
-import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
+import { TransformComponent, TransformWrapper, useTransformContext } from "react-zoom-pan-pinch";
 import constant from "../../constants";
 import { Tag as LitmTag } from "../../litm/tag";
 import { Status as LitmStatus, Status } from "../../litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
 import { Item, Menu, Submenu, useContextMenu, type ItemParams, type TriggerEvent } from "react-contexify";
-import { ArrowDownIcon, FireIcon, PencilIcon, PlusIcon, StrikethroughIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { MinusIcon } from "@heroicons/react/24/solid";
 
 type GameTableProps = {
     websocket: WebSocket | null,
@@ -155,7 +153,7 @@ export function GameTable({
                     style={{
                         position: "relative",
                         width: "80vw",
-                        height: "98vh",
+                        height: "49vh",
                         border: "2px solid #68ff03ff",
                         borderRadius: "4px",
                         boxSizing: "border-box",

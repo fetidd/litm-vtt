@@ -72,52 +72,13 @@ export function DraggableEntity({ id, ept, zIndex, bounds, editable, updateEntit
                 {...listeners}
                 {...attributes}
             >
-                {entity.entityType == "tag" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} />}
-                {entity.entityType == "status" && <Status status={entity as LitmStatus} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} />}
-                {entity.entityType == "story-theme" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} />}
+                {entity.entityType == "tag" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} addModifier={addModifier} removeEntity={removeEntity} />}
+                {entity.entityType == "status" && <Status status={entity as LitmStatus} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} addModifier={addModifier} removeEntity={removeEntity} />}
+                {entity.entityType == "story-theme" && <Tag tag={entity as LitmTag} editing={editable} setEditing={setEditingEntity} updateEntity={updateEntity} addModifier={addModifier} removeEntity={removeEntity} />}
             </div>
-            {createPortal(
-                <Menu id={MENU_ID}>
-                    {((entity as ModifierEntity).canBurn && !entity.isScratched) && <Item onClick={() => addModifier(entity as ModifierEntity, "add", true)}>{<FireIcon style={iconStyle} />}{`Burn ${entity.entityType}`}</Item>}
-
-                    <Item onClick={() => addModifier(entity as ModifierEntity, "add", false)}>{<PlusIcon style={iconStyle} />}{`Add ${entity.entityType}`}</Item>
-                    <Item onClick={() => addModifier(entity as ModifierEntity, "subtract", false)}>{<MinusIcon style={iconStyle} />}{`Subtract ${entity.entityType}`}</Item>
-
-                    {entity.canScratch && <Item onClick={() => updateEntity(entity.id, (e) => { (e as ModifierEntity).isScratched = !entity.isScratched; return e; })}>{<StrikethroughIcon style={iconStyle} />} {`${entity.isScratched ? "Uns" : "S"}cratch ${entity.entityType}`}</Item>}
-
-                    {entity.entityType == "status" && <Item closeOnClick={false} onClick={() => { updateEntity(entity.id, (e) => { (e as LitmStatus).decreaseTier((entity as LitmStatus).value > 1 ? 1 : 0); return e; }) }} >{<ArrowDownIcon style={iconStyle} />}Decrease tier</Item>}
-                    {entity.entityType == "status" &&  <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-                        {[1, 2, 3, 4, 5, 6].map(n => {
-                            return (
-                                <Item
-                                    style={{
-                                        border: (entity as LitmStatus).hasTier(n) ? `4px solid ${constant.STATUS_COLOR}` : "4px solid transparent",
-                                        borderRadius: "4px"
-                                    }}
-                                    onClick={() => {
-                                        updateEntity(entity.id, (e) => {
-                                            (e as LitmStatus).addTier(n);
-                                            return e;
-                                        })
-                                    }}
-                                >{n}</Item>
-                            )
-                        })}
-                    </div>}
-
-                    <Item onClick={() => setEditingEntity(entity.id)}>{<PencilIcon style={iconStyle} />}Edit</Item>
-                    <Item onClick={() => removeEntity(entity as Entity)}>{<TrashIcon style={iconStyle} />}Remove</Item>
-                </Menu>,
-                document.body
-            )}
+            
         </>
     )
-}
-
-const iconStyle: React.CSSProperties = {
-    width: "20px",
-    height: "20px",
-    marginRight: "8px"
 }
 
 function getEntityComponentBounds(entity: Entity): { xBound: number, yBound: number } {

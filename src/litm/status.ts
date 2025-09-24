@@ -17,14 +17,7 @@ export class Status extends ModifierEntity {
       return this.tiers.reduce((prev, curr) => Math.max(prev, curr))
     }
 
-    constructor(
-      public name: string,
-      public initialTier: number = 1
-    ) {
-      super()
-      if (initialTier < 1 || initialTier > 6) throw Error("Tiers must be 1-6");
-      this._tiers.push(initialTier);
-    }
+    static blank() {return new Status()}
 
     public hasTier(n: number): boolean {
       return this._tiers.includes(n)
@@ -56,9 +49,10 @@ export class Status extends ModifierEntity {
         if (raw.name == undefined) throw Error("missing name");
         if (raw.id == undefined) throw Error("missing id");
         if (raw._tiers == undefined) throw Error("missing _tiers");
-        const ent = new Status(raw.name);
+        const ent = Status.blank()
+        ent.name = raw.name;
         ent.id = raw.id;
-        ent.tiers = raw._tiers; // TODO need a whole fucking day on serializing and deserializing. Ballache!
+        ent.tiers = raw._tiers;
         return ent;
       } catch (e) {
         throw Error(`Failed to deserialize Status from ${JSON.stringify(raw)}: ${e}`)
