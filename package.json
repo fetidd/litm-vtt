@@ -21,6 +21,7 @@
     "@flydotio/dockerfile": "^0.7.10",
     "@types/bun": "latest",
     "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react-dom": "^19",
+    "prettier": "3.6.2"
   }
 }

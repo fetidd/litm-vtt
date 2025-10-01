@@ -10,16 +10,32 @@ export function handleMessage(
   ws: ServerWebSocket<{ authToken: string }>,
   message: string | Buffer<ArrayBufferLike>,
   db: LitmDatabase,
-  server: Bun.Server
+  server: Bun.Server,
 ) {
   const parsedMessage = JSON.parse(message.toString());
   switch (parsedMessage.type) {
-    case "updateGameTableEntityPosition": { handleUpdateGameTableEntityPosition(parsedMessage, db, server); break; }
-    case "updateGameTableEntityDetails":  { handleUpdateGameTableEntityDetails(parsedMessage, db, server); break; }
-    case "createNewGameTableEntity":      { handleCreateNewGameTableEntity(parsedMessage, db, server); break; }
-    case "rollRequest":                   { handleRollRequest(parsedMessage, server); break; }
-    case "deleteGameTableEntity":         { handleDeleteGameTableEntity(parsedMessage, db, server); break}
-    default:
-      {console.warn(`Unknown message type: ${parsedMessage.type}`);}
+    case "updateGameTableEntityPosition": {
+      handleUpdateGameTableEntityPosition(parsedMessage, db, server);
+      break;
+    }
+    case "updateGameTableEntityDetails": {
+      handleUpdateGameTableEntityDetails(parsedMessage, db, server);
+      break;
+    }
+    case "createNewGameTableEntity": {
+      handleCreateNewGameTableEntity(parsedMessage, db, server);
+      break;
+    }
+    case "rollRequest": {
+      handleRollRequest(parsedMessage, server);
+      break;
+    }
+    case "deleteGameTableEntity": {
+      handleDeleteGameTableEntity(parsedMessage, db, server);
+      break;
+    }
+    default: {
+      console.warn(`Unknown message type: ${parsedMessage.type}`);
+    }
   }
 }

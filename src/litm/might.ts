@@ -1,1 +1,1 @@
-export type Might = 'origin' | 'adventure' | 'greatness';
+export type Might = "origin" | "adventure" | "greatness";

@@ -2,12 +2,11 @@ import type { StateSetter } from "../types";
 import { deserializeRawEntity } from "@/litm/helpers";
 import type { Entity } from "@/litm/entity";
 
-
 export function handleClientDrawerEntitySync(
-    { entities }: { entities: Entity[] }, 
-    setDrawerEntities: StateSetter<Entity[]>
+  { entities }: { entities: Entity[] },
+  setDrawerEntities: StateSetter<Entity[]>,
 ) {
-    const des = entities.map(entity => deserializeRawEntity(entity));
-    console.log(des)
-    setDrawerEntities(() => des);
+  const des = entities.map((entity) => deserializeRawEntity(entity));
+  console.log(des);
+  setDrawerEntities(() => des);
 }

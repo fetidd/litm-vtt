@@ -12,7 +12,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
     if (success) {
       // Bun automatically returns a 101 Switching Protocols
       // if the upgrade succeeds
-        console.debug(`Upgrading!`)
+      console.debug(`Upgrading!`);
       return undefined;
     }
 
@@ -35,7 +35,7 @@ const server = Bun.serve<{ authToken: string }, {}>({
 
     async drain() {
       console.debug("WebSocket backpressure has drained");
-    }
+    },
   },
 
   routes: {
