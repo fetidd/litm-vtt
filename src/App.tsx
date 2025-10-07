@@ -48,6 +48,7 @@ export function App() {
     { id: string; text: string }[]
   >([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [drawerHeight, setDrawerHeight] = useState(200);
 
   // WEBSOCKET HANDLING
   useEffect(() => {
@@ -96,9 +97,10 @@ export function App() {
   const style: React.CSSProperties = {
     display: "grid",
     gridTemplateColumns: "1fr 300px",
-    gridTemplateRows: "1fr auto",
+    gridTemplateRows: `1fr 8px ${drawerHeight}px`,
     gridTemplateAreas: `
       "game-table roll-widget"
+      "resize-handle roll-widget"
       "drawer roll-widget"
     `,
     height: "100vh",
@@ -106,6 +108,27 @@ export function App() {
     columnGap: "4px",
     rowGap: "4px",
     boxSizing: "border-box",
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = drawerHeight;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaY = startY - e.clientY;
+      const maxHeight = window.innerHeight * 0.75;
+      const newHeight = Math.max(100, Math.min(maxHeight, startHeight + deltaY));
+      setDrawerHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const MENU_ID = "menu-id";
@@ -153,6 +176,21 @@ export function App() {
                 addModifier={addModifier}
               />
             </TransformWrapper>
+          </div>
+          <div 
+            style={{ 
+              gridArea: "resize-handle", 
+              cursor: "ns-resize", 
+              backgroundColor: "#68ff03ff",
+              border: "1px solid #68ff03ff",
+              borderRadius: "2px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            onMouseDown={handleMouseDown}
+          >
+            <div style={{ width: "20px", height: "2px", backgroundColor: "#fff", borderRadius: "1px" }} />
           </div>
           <div style={{ gridArea: "drawer", overflow: "hidden", height: "100%" }}>
             <TransformWrapper

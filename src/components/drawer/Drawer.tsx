@@ -38,6 +38,7 @@ export default function Drawer({
       }}
     >
       <TransformComponent wrapperStyle={{ height: "100%", width: "100%" }}>
+        <div style={{ padding: "8px", display: "flex", gap: "8px" }}>
         {hero && (
           <HeroCard
             hero={hero}
@@ -72,6 +73,7 @@ export default function Drawer({
             removeEntity={undefined}
           />
         )}
+        </div>
       </TransformComponent>
     </div>
   );
