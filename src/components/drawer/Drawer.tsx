@@ -29,8 +29,8 @@ export default function Drawer({
     <div
       style={{
         position: "relative",
-        width: "80vw",
-        height: "48vh",
+        width: "100%",
+        height: "100%",
         border: "2px solid #68ff03ff",
         borderRadius: "4px",
         boxSizing: "border-box",

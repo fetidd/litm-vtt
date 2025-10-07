@@ -94,13 +94,18 @@ export function App() {
   }, []);
 
   const style: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "start",
-    height: "98vh",
-    flexGrow: 1,
-    margin: "5px",
+    display: "grid",
+    gridTemplateColumns: "1fr 300px",
+    gridTemplateRows: "1fr auto",
+    gridTemplateAreas: `
+      "game-table roll-widget"
+      "drawer roll-widget"
+    `,
+    height: "100vh",
+    padding: "4px",
+    columnGap: "4px",
+    rowGap: "4px",
+    boxSizing: "border-box",
   };
 
   const MENU_ID = "menu-id";
@@ -128,13 +133,13 @@ export function App() {
     return (
       <div className="app" style={style} onContextMenu={displayContextMenu}>
         <UserContext value={user}>
-          <div style={{ display: "flex", gap: "4px", flexDirection: "column" }}>
+          <div style={{ gridArea: "game-table", overflow: "hidden", height: "100%" }}>
             <TransformWrapper
               panning={{
                 excluded: ["draggable-entity"],
-                allowLeftClickPan: false,
-                allowRightClickPan: false,
-                velocityDisabled: true,
+                allowLeftClickPan: true,
+                allowRightClickPan: true,
+                velocityDisabled: false,
               }}
               minScale={1}
               maxScale={1}
@@ -148,12 +153,14 @@ export function App() {
                 addModifier={addModifier}
               />
             </TransformWrapper>
+          </div>
+          <div style={{ gridArea: "drawer", overflow: "hidden", height: "100%" }}>
             <TransformWrapper
               panning={{
                 excluded: ["draggable-entity"],
-                allowLeftClickPan: false,
-                allowRightClickPan: false,
-                velocityDisabled: true,
+                allowLeftClickPan: true,
+                allowRightClickPan: true,
+                velocityDisabled: false,
               }}
               minScale={1}
               maxScale={1}
@@ -168,17 +175,19 @@ export function App() {
               />
             </TransformWrapper>
           </div>
-          <RollWidget
-            websocket={ws}
-            rollMessages={rollMessages}
-            modifiers={selectedModifiers}
-            handleRemoveModifier={(id: string) =>
-              setSelectedModifiers((prev) =>
-                prev.filter((e) => e.entity.id !== id),
-              )
-            }
-            clearModifiers={() => setSelectedModifiers([])}
-          />
+          <div style={{ gridArea: "roll-widget" }}>
+            <RollWidget
+              websocket={ws}
+              rollMessages={rollMessages}
+              modifiers={selectedModifiers}
+              handleRemoveModifier={(id: string) =>
+                setSelectedModifiers((prev) =>
+                  prev.filter((e) => e.entity.id !== id),
+                )
+              }
+              clearModifiers={() => setSelectedModifiers([])}
+            />
+          </div>
         </UserContext>
 
         <Menu id={MENU_ID}>

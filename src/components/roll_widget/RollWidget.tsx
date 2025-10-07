@@ -49,11 +49,9 @@ export default function RollWidget({
       id="roll-widget"
       style={{
         position: "relative",
-        height: "98vh",
+        height: "100%",
         border: "2px solid #68ff03ff",
         overflow: "hidden",
-        margin: "5px",
-        width: "20%",
         boxSizing: "border-box",
         padding: "5px",
         fontSize: "1rem",
