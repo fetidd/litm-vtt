@@ -3,6 +3,10 @@ import { Tag as LitmTag } from "../../litm/tag";
 import Tag from "../Tag";
 import BaseCard from "./BaseCard";
 import Button from "../Button";
+import Advancement from "../Advancement";
+import TagArea from "../TagArea";
+import SpecialImprovements from "../SpecialImprovements";
+import Quest from "../Quest";
 
 interface ThemeCardProps {
   theme: any;
@@ -48,7 +52,6 @@ export default function ThemeCard({
         <div style={{ marginBottom: "4px" }}>
           <Tag
             tag={themeAsTag}
-            editing={editing === theme.id}
             setEditing={setEditing}
             updateEntity={updateEntity}
             isTheme={true}
@@ -57,145 +60,34 @@ export default function ThemeCard({
             onCard={true}
           />
         </div>
-        {theme.otherTags.map((tag: any) => (
-          <div key={tag.id} style={{ marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
-            <Tag
-              tag={tag}
-              editing={editing === theme.id}
-              setEditing={setEditing}
-              updateEntity={updateEntity}
-              removeEntity={undefined}
-              addModifier={addModifier}
-              onCard={true}
-            />
-            {editing === theme.id && (
-              <Button onClick={() => updateEntity({ ...theme, otherTags: theme.otherTags.filter((t: any) => t.id !== tag.id) })}>×</Button>
-            )}
-          </div>
-        ))}
-        {editing === theme.id && (
-          <Button
-            onClick={() => {
-              const newTag = LitmTag.blank();
-              newTag.name = "New Tag";
-              newTag.owner = theme.owner;
-              updateEntity({ ...theme, otherTags: [...theme.otherTags, newTag] });
-            }}
-          >
-            + Add Tag
-          </Button>
-        )}
-        {theme.weaknessTags.map((tag: any, index: number) => (
-          <div key={tag.id} style={{ marginBottom: "4px", ...(index === 0 ? { marginTop: "8px" } : {}), display: "flex", alignItems: "center", gap: "4px" }}>
-            <Tag
-              tag={tag}
-              editing={editing === theme.id}
-              setEditing={setEditing}
-              updateEntity={updateEntity}
-              isWeakness={true}
-              removeEntity={undefined}
-              addModifier={addModifier}
-              onCard={true}
-            />
-            {editing === theme.id && (
-              <Button onClick={() => updateEntity({ ...theme, weaknessTags: theme.weaknessTags.filter((t: any) => t.id !== tag.id) })}>×</Button>
-            )}
-          </div>
-        ))}
-        {editing === theme.id && (
-          <Button
-            onClick={() => {
-              const newTag = LitmTag.blank();
-              newTag.name = "New Weakness";
-              newTag.owner = theme.owner;
-              updateEntity({ ...theme, weaknessTags: [...theme.weaknessTags, newTag] });
-            }}
-          >
-            + Add Weakness
-          </Button>
-        )}
+        <TagArea
+          otherTags={theme.otherTags}
+          weaknessTags={theme.weaknessTags}
+          updateEntity={updateEntity}
+          addModifier={addModifier}
+          owner={theme.owner}
+          onUpdate={(otherTags, weaknessTags) => updateEntity({ ...theme, otherTags, weaknessTags })}
+        />
       </div>
-        {editing === theme.id ? (
-          <textarea
-            value={theme.quest}
-            onChange={(e) => updateEntity({ ...theme, quest: e.target.value })}
-            style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
-          />
-        ) : (
-          <div style={{ padding: "4px", margin: "4px 0px", resize: "vertical", minHeight: "60px" }}>{theme.quest}</div>
-        )}
-      <div style={{ display: "flex", justifyContent: "space-around", marginTop: "auto" }}>
-        {["abandon", "improve", "milestone"].map((stat) => (
-          <div
-            key={stat}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <span>{stat.toUpperCase()}</span>
-            <div>
-              {[...Array(theme.maxAdvancement).keys()].map((n) => (
-                <input
-                  key={n}
-                  type="checkbox"
-                  disabled={editing !== theme.id}
-                  onChange={() => {
-                    if (editing === theme.id) {
-                      const newValue = n < (theme as any)[stat] ? n : n + 1;
-                      updateEntity({ ...theme, [stat]: newValue });
-                    }
-                  }}
-                  checked={n < (theme as any)[stat]}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <Quest
+        quest={theme.quest}
+        onUpdate={(quest) => updateEntity({ ...theme, quest })}
+      />
+      <Advancement
+        abandon={theme.abandon}
+        improve={theme.improve}
+        milestone={theme.milestone}
+        maxAdvancement={theme.maxAdvancement}
+        onUpdate={(stat, value) => updateEntity({ ...theme, [stat]: value })}
+      />
     </div>
   );
 
   const backContent = (
-    <>
-      <h3
-        style={{
-          margin: "1px -12px",
-          padding: "4px 12px",
-          backgroundColor: "rgba(204, 165, 126, 0.43)",
-          textAlign: "center",
-        }}
-      >
-        Special Improvements
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {theme.specialImprovements.map((imp: string, n: number) =>
-          editing === theme.id ? (
-            <div key={n} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <input
-                type="text"
-                value={imp}
-                onChange={(e) => {
-                  const newImprovements = [...theme.specialImprovements];
-                  newImprovements[n] = e.target.value;
-                  updateEntity({ ...theme, specialImprovements: newImprovements });
-                }}
-                style={{ padding: "4px", margin: "2px", flex: 1 }}
-              />
-              <Button onClick={() => {
-                const newImprovements = theme.specialImprovements.filter((_: any, i: number) => i !== n);
-                updateEntity({ ...theme, specialImprovements: newImprovements });
-              }}>×</Button>
-            </div>
-          ) : (
-            <span key={n} style={{ padding: "4px" }}>
-              {imp}
-            </span>
-          )
-        )}
-      </div>
-    </>
+    <SpecialImprovements
+      specialImprovements={theme.specialImprovements}
+      onUpdate={(specialImprovements) => updateEntity({ ...theme, specialImprovements })}
+    />
   );
 
   return (
@@ -203,8 +95,6 @@ export default function ThemeCard({
       title={getTitle()}
       headerColor={getHeaderColor()}
       entityId={theme.id}
-      editing={editing}
-      setEditing={setEditing}
       frontContent={frontContent}
       backContent={backContent}
       style={style}

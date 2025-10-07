@@ -348,7 +348,25 @@ export default class LitmDatabase {
       backpack: [
         Tag.deserialize({
           id: "example-backpacktag-1",
-          name: lorem.generateWords(3),
+          name: "large steel sword",
+          isScratched: false,
+          owner: "ben",
+        }),
+        Tag.deserialize({
+          id: "example-backpacktag-2",
+          name: "dice",
+          isScratched: false,
+          owner: "ben",
+        }),
+        Tag.deserialize({
+          id: "example-backpacktag-3",
+          name: "flint",
+          isScratched: false,
+          owner: "ben",
+        }),
+        Tag.deserialize({
+          id: "example-backpacktag-4",
+          name: "compass",
           isScratched: false,
           owner: "ben",
         }),

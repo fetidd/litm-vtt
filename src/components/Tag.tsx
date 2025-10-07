@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 import type { Entity } from "@/litm/entity";
 import { UserContext } from "@/App";
+import TagInput from "./TagInput";
 
 export default function Tag({
   tag,
@@ -69,23 +70,12 @@ export default function Tag({
 
   if (editing) {
     tagObj = (
-      <input
-        style={{
-          background: "transparent",
-          textAlign: "center",
-          border: "none",
-          color: "black",
-          width: "fit",
-        }}
+      <TagInput
+        value={tagText}
+        onChange={setTagText}
+        onSubmit={performUpdate}
         placeholder="tag name"
         autoFocus
-        onChange={(e) => setTagText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key == "Enter") {
-            performUpdate();
-          }
-        }}
-        value={tagText}
       />
     );
   }
@@ -130,7 +120,7 @@ export default function Tag({
               {`${tag.isScratched ? "Uns" : "S"}cratch tag`}
             </Item>
           )}
-          {isMine && !onCard && (
+          {isMine && (
             <>
               <Item onClick={() => setEditing(tag.id)}>
                 {<PencilIcon style={iconStyle} />}Edit

@@ -6,8 +6,6 @@ interface BaseCardProps {
   title: string;
   headerColor: string;
   entityId: string;
-  editing: string | undefined;
-  setEditing: (id: string | undefined) => void;
   frontContent: ReactNode;
   backContent: ReactNode;
   style?: React.CSSProperties;
@@ -17,8 +15,6 @@ export default function BaseCard({
   title,
   headerColor,
   entityId,
-  editing,
-  setEditing,
   frontContent,
   backContent,
   style = {},
@@ -61,12 +57,6 @@ export default function BaseCard({
         <div style={{ display: "flex", gap: "8px" }}>
           <Button onClick={handleFlip} variant="header">
             Flip
-          </Button>
-          <Button
-            onClick={() => setEditing(editing === entityId ? undefined : entityId)}
-            variant="header"
-          >
-            {editing === entityId ? "Done" : "Edit"}
           </Button>
         </div>
       </div>

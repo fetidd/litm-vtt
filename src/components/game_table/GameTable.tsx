@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   DndContext,
   useDroppable,
@@ -16,12 +16,11 @@ import {
 } from "../../messaging/message";
 import {
   TransformComponent,
-  TransformWrapper,
   useTransformContext,
 } from "react-zoom-pan-pinch";
 import constant from "../../constants";
 import { Tag as LitmTag } from "../../litm/tag";
-import { Status as LitmStatus, Status } from "../../litm/status";
+import { Status as LitmStatus } from "../../litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
 import {
   Item,
@@ -31,6 +30,7 @@ import {
   type ItemParams,
   type TriggerEvent,
 } from "react-contexify";
+import { UserContext } from "@/App";
 
 type GameTableProps = {
   websocket: WebSocket | null;
@@ -58,6 +58,7 @@ export function GameTable({
     height: constant.GAME_TABLE_HEIGHT,
   });
   const [editing, setEditing] = useState<string | undefined>(undefined);
+  const user = useContext(UserContext);
 
   // WEBSOCKET MESSAGING
   function sendEntityPosition(id: string, x: number, y: number) {
@@ -162,7 +163,8 @@ export function GameTable({
   }
 
   const createNewGameBoardTag = (where: { x: number; y: number }) => {
-    const tag = new LitmTag("");
+    const tag = LitmTag.blank();
+    tag.owner = user!.username;
     setEditing(tag.id);
     where.x -= transformContext.transformState.positionX;
     where.y -= transformContext.transformState.positionY;
@@ -174,7 +176,9 @@ export function GameTable({
     where: { x: number; y: number },
     tier: number = 1,
   ) => {
-    const status = new LitmStatus("", tier);
+    const status = LitmStatus.blank();
+    status.owner = user!.username;
+    status.addTier(tier);
     setEditing(status.id);
     where.x -= transformContext.transformState.positionX;
     where.y -= transformContext.transformState.positionY;
@@ -278,9 +282,9 @@ export function GameTable({
                       maxX: tableSize.width,
                       maxY: tableSize.height,
                     }}
-                    editable={entityData.entity.id === editing}
+                    editing={entityData.entity.id === editing}
                     updateEntity={updateEntity}
-                    setEditingEntity={setEditing}
+                    setEditing={setEditing}
                     addModifier={addModifier}
                     removeEntity={removeEntityFromGameBoard}
                   />

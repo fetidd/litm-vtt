@@ -3,8 +3,6 @@ import ThemeCard from "./ThemeCard";
 
 export default function HeroThemeCard({
   theme,
-  editing,
-  setEditing,
   updateEntity,
   removeEntity,
   addModifier,
@@ -12,8 +10,6 @@ export default function HeroThemeCard({
   return (
     <ThemeCard
       theme={theme}
-      editing={editing}
-      setEditing={setEditing}
       updateEntity={updateEntity}
       removeEntity={removeEntity}
       addModifier={addModifier}
@@ -23,8 +19,6 @@ export default function HeroThemeCard({
 
 interface HeroThemeCardProps {
   theme: LitmTheme;
-  editing: string | undefined;
-  setEditing: any;
   updateEntity: any;
   removeEntity: any;
   addModifier: any;

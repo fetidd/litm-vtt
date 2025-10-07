@@ -3,8 +3,6 @@ import ThemeCard from "./ThemeCard";
 
 export default function FellowshipThemeCard({
   theme,
-  editing,
-  setEditing,
   updateEntity,
   removeEntity,
   addModifier,
@@ -12,8 +10,6 @@ export default function FellowshipThemeCard({
   return (
     <ThemeCard
       theme={theme}
-      editing={editing}
-      setEditing={setEditing}
       updateEntity={updateEntity}
       removeEntity={removeEntity}
       addModifier={addModifier}
@@ -25,8 +21,6 @@ export default function FellowshipThemeCard({
 
 interface FellowshipThemeCardProps {
   theme: LitmFellowship;
-  editing: string | undefined;
-  setEditing: any;
   updateEntity: any;
   removeEntity: any;
   addModifier: any;
