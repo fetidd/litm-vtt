@@ -11,22 +11,18 @@ import type { EntityPositionData } from "./types";
 import { handleRollResponse } from "./handlers/rollResponse";
 import { handleUpdateClientGameTableEntityPosition } from "./handlers/updateClientGameTableEntityPosition";
 import { handleClientGameTableEntitySync } from "./handlers/clientGameTableEntitySync";
-import { UpdateGameTableEntityDetails } from "./messaging/message";
 import { handleUpdateClientGameTableEntityDetails } from "./handlers/updateClientGameTableEntityDetails";
 import {
   Item,
   Menu,
-  Separator,
-  Submenu,
   useContextMenu,
   type TriggerEvent,
 } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import Drawer from "./components/drawer/Drawer";
-import { Hero } from "./litm/hero";
-import { Tag } from "./litm/tag";
-import { HeroTheme } from "./litm/theme";
 import { handleClientDrawerEntitySync } from "./handlers/clientDrawerEntitySync";
+import ResizeHandle from "./components/ResizeHandle";
+import CircularResizeHandle from "./components/CircularResizeHandle";
 
 export const UserContext: Context<User | null> = createContext(
   null as User | null,
@@ -226,50 +222,19 @@ export function App() {
               />
             </TransformWrapper>
           </div>
-          <div 
-            style={{ 
-              gridArea: "width-resize-handle", 
-              cursor: "ew-resize", 
-              backgroundColor: "#68ff03ff",
-              border: "1px solid #68ff03ff",
-              borderRadius: "2px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            onMouseDown={handleWidthMouseDown}
-          >
-            <div style={{ width: "2px", height: "20px", backgroundColor: "#fff", borderRadius: "1px" }} />
-          </div>
-          <div 
-            style={{ 
-              gridArea: "resize-handle", 
-              cursor: "ns-resize", 
-              backgroundColor: "#68ff03ff",
-              border: "1px solid #68ff03ff",
-              borderRadius: "2px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            onMouseDown={handleHeightMouseDown}
-          >
-            <div style={{ width: "20px", height: "2px", backgroundColor: "#fff", borderRadius: "1px" }} />
-          </div>
-          <div 
-            style={{
-              position: "absolute",
-              right: `${rollWidgetWidth + 12}px`,
-              top: `calc(100vh - ${drawerHeight + 8 + 4}px)`,
-              width: "24px",
-              height: "24px",
-              backgroundColor: "#68ff03ff",
-              border: "2px solid #fff",
-              borderRadius: "50%",
-              cursor: "grab",
-              zIndex: 10,
-              transform: "translate(50%, -50%)"
-            }}
+          <ResizeHandle 
+            direction="horizontal" 
+            gridArea="width-resize-handle" 
+            onMouseDown={handleWidthMouseDown} 
+          />
+          <ResizeHandle 
+            direction="vertical" 
+            gridArea="resize-handle" 
+            onMouseDown={handleHeightMouseDown} 
+          />
+          <CircularResizeHandle 
+            rollWidgetWidth={rollWidgetWidth}
+            drawerHeight={drawerHeight}
             onMouseDown={handleBothMouseDown}
           />
           <div style={{ gridArea: "drawer", overflow: "hidden", height: "100%" }}>
