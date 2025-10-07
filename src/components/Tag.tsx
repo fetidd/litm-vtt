@@ -23,6 +23,7 @@ export default function Tag({
   addModifier,
   isWeakness = false,
   isTheme = false,
+  onCard = false
 }: TagProps) {
   const [tagText, setTagText] = useState(tag.name);
 
@@ -33,8 +34,9 @@ export default function Tag({
     background: !isWeakness ? constant.TAG_COLOR : "#f89f64ff",
     border: !isWeakness ? "1px solid #e6c200" : "1px solid #ee7f36ff",
     borderRadius: "4px",
-    width: `${tag.name.length * (constant.TAG_CHAR_WIDTH_MULTIPLIER * (isTheme ? 1.2 : 1))}px`,
+    width: "fit-content",
     minWidth: isTheme ? "120px" : "80px",
+    padding: "0 12px",
     height: isTheme ? "60" : "30px",
     color: `${tag.isScratched ? "#25252560" : "#333"}`, // TODO add scratched color to constant?
     alignContent: "center",
@@ -42,7 +44,7 @@ export default function Tag({
     fontWeight: isTheme ? "bolder" : "normal",
     fontStyle: "italic",
   };
-  let tagObj = <span style={{ textAlign: "center" }}>{tag.name}</span>;
+  let tagObj = <span style={{ textAlign: "center", whiteSpace: "nowrap" }}>{tag.name}</span>;
 
   function performUpdate() {
     setEditing(undefined);
@@ -128,7 +130,7 @@ export default function Tag({
               {`${tag.isScratched ? "Uns" : "S"}cratch tag`}
             </Item>
           )}
-          {isMine && (
+          {isMine && !onCard && (
             <>
               <Item onClick={() => setEditing(tag.id)}>
                 {<PencilIcon style={iconStyle} />}Edit
@@ -154,4 +156,5 @@ export type TagProps = {
   addModifier: any;
   isWeakness?: boolean;
   isTheme?: boolean;
+  onCard?: boolean
 };

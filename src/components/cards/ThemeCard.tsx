@@ -54,10 +54,11 @@ export default function ThemeCard({
             isTheme={true}
             removeEntity={undefined}
             addModifier={addModifier}
+            onCard={true}
           />
         </div>
         {theme.otherTags.map((tag: any) => (
-          <div key={tag.id} style={{ marginBottom: "4px" }}>
+          <div key={tag.id} style={{ marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
             <Tag
               tag={tag}
               editing={editing === theme.id}
@@ -65,7 +66,11 @@ export default function ThemeCard({
               updateEntity={updateEntity}
               removeEntity={undefined}
               addModifier={addModifier}
+              onCard={true}
             />
+            {editing === theme.id && (
+              <Button onClick={() => updateEntity({ ...theme, otherTags: theme.otherTags.filter((t: any) => t.id !== tag.id) })}>×</Button>
+            )}
           </div>
         ))}
         {editing === theme.id && (
@@ -81,7 +86,7 @@ export default function ThemeCard({
           </Button>
         )}
         {theme.weaknessTags.map((tag: any, index: number) => (
-          <div key={tag.id} style={{ marginBottom: "4px", ...(index === 0 ? { marginTop: "8px" } : {}) }}>
+          <div key={tag.id} style={{ marginBottom: "4px", ...(index === 0 ? { marginTop: "8px" } : {}), display: "flex", alignItems: "center", gap: "4px" }}>
             <Tag
               tag={tag}
               editing={editing === theme.id}
@@ -90,7 +95,11 @@ export default function ThemeCard({
               isWeakness={true}
               removeEntity={undefined}
               addModifier={addModifier}
+              onCard={true}
             />
+            {editing === theme.id && (
+              <Button onClick={() => updateEntity({ ...theme, weaknessTags: theme.weaknessTags.filter((t: any) => t.id !== tag.id) })}>×</Button>
+            )}
           </div>
         ))}
         {editing === theme.id && (
@@ -163,17 +172,22 @@ export default function ThemeCard({
       <div style={{ display: "flex", flexDirection: "column" }}>
         {theme.specialImprovements.map((imp: string, n: number) =>
           editing === theme.id ? (
-            <input
-              key={n}
-              type="text"
-              value={imp}
-              onChange={(e) => {
-                const newImprovements = [...theme.specialImprovements];
-                newImprovements[n] = e.target.value;
+            <div key={n} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <input
+                type="text"
+                value={imp}
+                onChange={(e) => {
+                  const newImprovements = [...theme.specialImprovements];
+                  newImprovements[n] = e.target.value;
+                  updateEntity({ ...theme, specialImprovements: newImprovements });
+                }}
+                style={{ padding: "4px", margin: "2px", flex: 1 }}
+              />
+              <Button onClick={() => {
+                const newImprovements = theme.specialImprovements.filter((_: any, i: number) => i !== n);
                 updateEntity({ ...theme, specialImprovements: newImprovements });
-              }}
-              style={{ padding: "4px", margin: "2px" }}
-            />
+              }}>×</Button>
+            </div>
           ) : (
             <span key={n} style={{ padding: "4px" }}>
               {imp}

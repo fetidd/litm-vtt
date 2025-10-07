@@ -12,118 +12,128 @@ export default function HeroCard({
   addModifier,
 }: HeroCardProps) {
   const frontContent = (
-    <>
-      {/* Hero name */}
-      {editing === hero.id ? (
-        <input
-          type="text"
-          value={hero.name}
-          onChange={(e) => updateEntity({ ...hero, name: e.target.value })}
-          style={{ fontSize: "2rem", textAlign: "center", border: "none", background: "transparent" }}
-        />
-      ) : (
-        <div style={{ fontSize: "2rem", textAlign: "center" }}>
-          {hero.name}
-        </div>
-      )}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flexGrow: 1 }}>
+        {/* Hero name */}
+        {editing === hero.id ? (
+          <input
+            type="text"
+            value={hero.name}
+            onChange={(e) => updateEntity({ ...hero, name: e.target.value })}
+            style={{ fontSize: "2rem", textAlign: "center", border: "none", background: "transparent" }}
+          />
+        ) : (
+          <div style={{ fontSize: "2rem", textAlign: "center" }}>
+            {hero.name}
+          </div>
+        )}
 
-      {/* Player name */}
-      <h3
-        style={{
-          margin: "1px -12px",
-          padding: "4px 12px",
-          backgroundColor: "rgba(204, 165, 126, 0.43)",
-          textAlign: "center",
-        }}
-      >
-        Player Name
-      </h3>
-      {editing === hero.id ? (
-        <input
-          type="text"
-          value={hero.owner}
-          onChange={(e) => updateEntity({ ...hero, owner: e.target.value })}
-          style={{ textAlign: "center", border: "1px solid #ccc", padding: "4px" }}
-        />
-      ) : (
-        <div style={{ textAlign: "center" }}>{hero.owner}</div>
-      )}
+        {/* Player name */}
+        <h3
+          style={{
+            margin: "1px -12px",
+            padding: "4px 12px",
+            backgroundColor: "rgba(204, 165, 126, 0.43)",
+            textAlign: "center",
+          }}
+        >
+          Player Name
+        </h3>
+        {editing === hero.id ? (
+          <input
+            type="text"
+            value={hero.owner}
+            onChange={(e) => updateEntity({ ...hero, owner: e.target.value })}
+            style={{ textAlign: "center", border: "1px solid #ccc", padding: "4px" }}
+          />
+        ) : (
+          <div style={{ textAlign: "center" }}>{hero.owner}</div>
+        )}
 
-      {/* Relationship tags */}
-      <h3
-        style={{
-          margin: "1px -12px",
-          padding: "4px 12px",
-          backgroundColor: "rgba(204, 165, 126, 0.43)",
-          textAlign: "center",
-        }}
-      >
-        Fellowship Relationship
-      </h3>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          flexDirection: "column",
-          gap: "2px",
-        }}
-      >
-        {[...hero.relationships.entries()].map((value) => {
-          const [name, tag] = value;
-          return (
-            <div
-              key={tag.id}
-              style={{ display: "flex", justifyContent: "space-around" }}
-            >
-              <div style={{ display: "flex" }}>
-                {editing === hero.id ? (
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => {
-                      const newRelationships = new Map(hero.relationships);
-                      newRelationships.delete(name);
-                      newRelationships.set(e.target.value, tag);
-                      updateEntity({ ...hero, relationships: newRelationships });
-                    }}
-                    style={{ padding: "2px", width: "80px" }}
+        {/* Relationship tags */}
+        <h3
+          style={{
+            margin: "1px -12px",
+            padding: "4px 12px",
+            backgroundColor: "rgba(204, 165, 126, 0.43)",
+            textAlign: "center",
+          }}
+        >
+          Fellowship Relationship
+        </h3>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            flexDirection: "column",
+            gap: "2px",
+          }}
+        >
+          {[...hero.relationships.entries()].map((value) => {
+            const [name, tag] = value;
+            return (
+              <div
+                key={tag.id}
+                style={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}
+              >
+                <div style={{ display: "flex" }}>
+                  {editing === hero.id ? (
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => {
+                        const newRelationships = new Map(hero.relationships);
+                        newRelationships.delete(name);
+                        newRelationships.set(e.target.value, tag);
+                        updateEntity({ ...hero, relationships: newRelationships });
+                      }}
+                      style={{ padding: "2px", width: "80px" }}
+                    />
+                  ) : (
+                    <span>{name}</span>
+                  )}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <Tag
+                    tag={tag}
+                    editing={editing === hero.id}
+                    setEditing={setEditing}
+                    updateEntity={updateEntity}
+                    removeEntity={undefined}
+                    addModifier={addModifier}
+                    onCard={true}
                   />
-                ) : (
-                  <span>{name}</span>
+                </div>
+                {editing === hero.id && (
+                  <Button onClick={() => {
+                    const newRelationships = new Map(hero.relationships);
+                    newRelationships.delete(name);
+                    updateEntity({ ...hero, relationships: newRelationships });
+                  }}>×</Button>
                 )}
               </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <Tag
-                  tag={tag}
-                  editing={editing === hero.id}
-                  setEditing={setEditing}
-                  updateEntity={updateEntity}
-                  removeEntity={undefined}
-                  addModifier={addModifier}
-                />
-              </div>
-            </div>
-          );
-        })}
-        {editing === hero.id && (
-          <Button
-            onClick={() => {
-              const newTag = new (Tag as any)();
-              newTag.name = "New Relationship";
-              newTag.owner = hero.owner;
-              newTag.id = Math.random().toString();
-              const newRelationships = new Map(hero.relationships);
-              newRelationships.set("New Person", newTag);
-              updateEntity({ ...hero, relationships: newRelationships });
-            }}
-          >
-            + Add Relationship
-          </Button>
-        )}
+            );
+          })}
+          {editing === hero.id && (
+            <Button
+              onClick={() => {
+                const newTag = new (Tag as any)();
+                newTag.name = "New Relationship";
+                newTag.owner = hero.owner;
+                newTag.id = Math.random().toString();
+                const newRelationships = new Map(hero.relationships);
+                newRelationships.set("New Person", newTag);
+                updateEntity({ ...hero, relationships: newRelationships });
+              }}
+            >
+              + Add Relationship
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Promise */}
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
+      <div style={{ display: "flex", justifyContent: "space-around", marginTop: "auto", marginBottom: "8px" }}>
         <h3>Promise</h3>
         {[...Array(hero.maxPromise).keys()].map((n) => {
           return (
@@ -144,50 +154,57 @@ export default function HeroCard({
       </div>
 
       {/* Quintessences */}
-      <h3
-        style={{
-          margin: "1px -12px",
-          padding: "4px 12px",
-          backgroundColor: "rgba(204, 165, 126, 0.43)",
-          textAlign: "center",
-        }}
-      >
-        Quintessences
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {[...(hero as any).quintessences || []].map((n) => {
-          return editing === hero.id ? (
-            <input
-              key={n}
-              type="text"
-              value={n || ""}
-              onChange={(e) => {
-                const newQuintessences = n;
-                newQuintessences[n] = e.target.value;
-                updateEntity({ ...hero, quintessences: newQuintessences });
+      <div>
+        <h3
+          style={{
+            margin: "1px -12px",
+            padding: "4px 12px",
+            backgroundColor: "rgba(204, 165, 126, 0.43)",
+            textAlign: "center",
+          }}
+        >
+          Quintessences
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {[...(hero as any).quintessences || []].map((n, index) => {
+            return editing === hero.id ? (
+              <div key={index} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <input
+                  type="text"
+                  value={n || ""}
+                  onChange={(e) => {
+                    const newQuintessences = [...(hero as any).quintessences];
+                    newQuintessences[index] = e.target.value;
+                    updateEntity({ ...hero, quintessences: newQuintessences });
+                  }}
+                  style={{ padding: "4px", margin: "2px", flex: 1 }}
+                  placeholder={`Quintessence ${index + 1}`}
+                />
+                <Button onClick={() => {
+                  const newQuintessences = (hero as any).quintessences.filter((_: any, i: number) => i !== index);
+                  updateEntity({ ...hero, quintessences: newQuintessences });
+                }}>×</Button>
+              </div>
+            ) : (
+              <span
+                key={index}
+                style={{ padding: "4px" }}
+              >{n || ""}</span>
+            );
+          })}
+          {editing === hero.id && (
+            <Button
+              onClick={() => {
+                const quintessences = (hero as any).quintessences || [];
+                updateEntity({ ...hero, quintessences: [...quintessences, ""] });
               }}
-              style={{ padding: "4px", margin: "2px" }}
-              placeholder={`Quintessence ${n + 1}`}
-            />
-          ) : (
-            <span
-              key={n}
-              style={{ padding: "4px" }}
-            >{n || ""}</span>
-          );
-        })}
-        {editing === hero.id && (
-          <Button
-            onClick={() => {
-              const quintessences = (hero as any).quintessences || [];
-              updateEntity({ ...hero, quintessences: [...quintessences, ""] });
-            }}
-          >
-            + Add Quintessence
-          </Button>
-        )}
+            >
+              + Add Quintessence
+            </Button>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 
   const backContent = (
@@ -198,15 +215,20 @@ export default function HeroCard({
         <div style={{ display: "flex", flexDirection: "column" }}>
           {hero.backpack.map((tag) => {
             return (
-              <Tag
-                key={tag.id}
-                tag={tag}
-                editing={editing === hero.id}
-                setEditing={setEditing}
-                updateEntity={updateEntity}
-                removeEntity={undefined}
-                addModifier={addModifier}
-              />
+              <div key={tag.id} style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "4px" }}>
+                <Tag
+                  tag={tag}
+                  editing={editing === hero.id}
+                  setEditing={setEditing}
+                  updateEntity={updateEntity}
+                  removeEntity={undefined}
+                  addModifier={addModifier}
+                  onCard={true}
+                />
+                {editing === hero.id && (
+                  <Button onClick={() => updateEntity({ ...hero, backpack: hero.backpack.filter(t => t.id !== tag.id) })}>×</Button>
+                )}
+              </div>
             );
           })}
           {editing === hero.id && (
@@ -229,22 +251,27 @@ export default function HeroCard({
       <div style={{ marginTop: "auto" }}>
         <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Notes</h3>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {[...(hero as any).notes || []].map((n) => {
+          {[...(hero as any).notes || []].map((n, index) => {
             return editing === hero.id ? (
-              <textarea
-                key={n}
-                value={n || ""}
-                onChange={(e) => {
-                  const newNotes = n;
-                  newNotes[n] = e.target.value;
+              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: "4px", marginBottom: "4px" }}>
+                <textarea
+                  value={n || ""}
+                  onChange={(e) => {
+                    const newNotes = [...(hero as any).notes];
+                    newNotes[index] = e.target.value;
+                    updateEntity({ ...hero, notes: newNotes });
+                  }}
+                  style={{ padding: "4px", resize: "vertical", minHeight: "40px", flex: 1 }}
+                  placeholder={`Note ${index + 1}`}
+                />
+                <Button onClick={() => {
+                  const newNotes = (hero as any).notes.filter((_: any, i: number) => i !== index);
                   updateEntity({ ...hero, notes: newNotes });
-                }}
-                style={{ padding: "4px", margin: "2px", resize: "vertical", minHeight: "40px" }}
-                placeholder={`Note ${n + 1}`}
-              />
+                }}>×</Button>
+              </div>
             ) : (
               <span
-                key={n}
+                key={index}
                 style={{ padding: "4px" }}
               >{n || ""}</span>
             );
