@@ -39,6 +39,7 @@ export default function Tag({
     color: `${tag.isScratched ? "#25252560" : "#333"}`, // TODO add scratched color to constant?
     alignContent: "center",
     fontSize: isTheme ? "1.2rem" : "1rem",
+    fontWeight: isTheme ? "bolder" : "normal",
     fontStyle: "italic",
   };
   let tagObj = <span style={{ textAlign: "center" }}>{tag.name}</span>;

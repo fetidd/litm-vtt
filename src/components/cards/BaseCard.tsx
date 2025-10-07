@@ -70,8 +70,8 @@ export default function BaseCard({
           </Button>
         </div>
       </div>
-      {side === "front" && !isFlipping && <div style={{ padding: "12px" }}>{frontContent}</div>}
-      {side === "back" && !isFlipping && <div style={{ padding: "12px" }}>{backContent}</div>}
+      {side === "front" && !isFlipping && <div style={{ padding: "12px", flex: 1, display: "flex", flexDirection: "column" }}>{frontContent}</div>}
+      {side === "back" && !isFlipping && <div style={{ padding: "12px", flex: 1, display: "flex", flexDirection: "column" }}>{backContent}</div>}
     </div>
   );
 }

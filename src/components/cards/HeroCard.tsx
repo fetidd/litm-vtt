@@ -191,73 +191,77 @@ export default function HeroCard({
   );
 
   const backContent = (
-    <>
-      {/* Backpack */}
-      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Backpack</h3>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {hero.backpack.map((tag) => {
-          return (
-            <Tag
-              key={tag.id}
-              tag={tag}
-              editing={editing === hero.id}
-              setEditing={setEditing}
-              updateEntity={updateEntity}
-              removeEntity={undefined}
-              addModifier={addModifier}
-            />
-          );
-        })}
-        {editing === hero.id && (
-          <Button
-            onClick={() => {
-              const newTag = new (Tag as any)();
-              newTag.name = "New Item";
-              newTag.owner = hero.owner;
-              newTag.id = Math.random().toString();
-              updateEntity({ ...hero, backpack: [...hero.backpack, newTag] });
-            }}
-          >
-            + Add Item
-          </Button>
-        )}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flexGrow: 1 }}>
+        {/* Backpack */}
+        <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Backpack</h3>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {hero.backpack.map((tag) => {
+            return (
+              <Tag
+                key={tag.id}
+                tag={tag}
+                editing={editing === hero.id}
+                setEditing={setEditing}
+                updateEntity={updateEntity}
+                removeEntity={undefined}
+                addModifier={addModifier}
+              />
+            );
+          })}
+          {editing === hero.id && (
+            <Button
+              onClick={() => {
+                const newTag = new (Tag as any)();
+                newTag.name = "New Item";
+                newTag.owner = hero.owner;
+                newTag.id = Math.random().toString();
+                updateEntity({ ...hero, backpack: [...hero.backpack, newTag] });
+              }}
+            >
+              + Add Item
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Notes */}
-      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Notes</h3>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {[...(hero as any).notes || []].map((n) => {
-          return editing === hero.id ? (
-            <textarea
-              key={n}
-              value={n || ""}
-              onChange={(e) => {
-                const newNotes = n;
-                newNotes[n] = e.target.value;
-                updateEntity({ ...hero, notes: newNotes });
+      <div style={{ marginTop: "auto" }}>
+        <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Notes</h3>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {[...(hero as any).notes || []].map((n) => {
+            return editing === hero.id ? (
+              <textarea
+                key={n}
+                value={n || ""}
+                onChange={(e) => {
+                  const newNotes = n;
+                  newNotes[n] = e.target.value;
+                  updateEntity({ ...hero, notes: newNotes });
+                }}
+                style={{ padding: "4px", margin: "2px", resize: "vertical", minHeight: "40px" }}
+                placeholder={`Note ${n + 1}`}
+              />
+            ) : (
+              <span
+                key={n}
+                style={{ padding: "4px" }}
+              >{n || ""}</span>
+            );
+          })}
+          {editing === hero.id && (
+            <Button
+              onClick={() => {
+                const notes = (hero as any).notes || [];
+                updateEntity({ ...hero, notes: [...notes, ""] });
               }}
-              style={{ padding: "4px", margin: "2px", resize: "vertical", minHeight: "40px" }}
-              placeholder={`Note ${n + 1}`}
-            />
-          ) : (
-            <span
-              key={n}
-              style={{ padding: "4px" }}
-            >{n || ""}</span>
-          );
-        })}
-        {editing === hero.id && (
-          <Button
-            onClick={() => {
-              const notes = (hero as any).notes || [];
-              updateEntity({ ...hero, notes: [...notes, ""] });
-            }}
-          >
-            + Add Note
-          </Button>
-        )}
+            >
+              + Add Note
+            </Button>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 
   return (

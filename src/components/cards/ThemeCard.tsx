@@ -43,73 +43,79 @@ export default function ThemeCard({
   };
 
   const frontContent = (
-    <>
-      <Tag
-        tag={themeAsTag}
-        editing={editing === theme.id}
-        setEditing={setEditing}
-        updateEntity={updateEntity}
-        isTheme={true}
-        removeEntity={undefined}
-        addModifier={addModifier}
-      />
-      {theme.otherTags.map((tag: any) => (
-        <Tag
-          key={tag.id}
-          tag={tag}
-          editing={editing === theme.id}
-          setEditing={setEditing}
-          updateEntity={updateEntity}
-          removeEntity={undefined}
-          addModifier={addModifier}
-        />
-      ))}
-      {editing === theme.id && (
-        <Button
-          onClick={() => {
-            const newTag = LitmTag.blank();
-            newTag.name = "New Tag";
-            newTag.owner = theme.owner;
-            updateEntity({ ...theme, otherTags: [...theme.otherTags, newTag] });
-          }}
-        >
-          + Add Tag
-        </Button>
-      )}
-      {theme.weaknessTags.map((tag: any) => (
-        <Tag
-          key={tag.id}
-          tag={tag}
-          editing={editing === theme.id}
-          setEditing={setEditing}
-          updateEntity={updateEntity}
-          isWeakness={true}
-          removeEntity={undefined}
-          addModifier={addModifier}
-        />
-      ))}
-      {editing === theme.id && (
-        <Button
-          onClick={() => {
-            const newTag = LitmTag.blank();
-            newTag.name = "New Weakness";
-            newTag.owner = theme.owner;
-            updateEntity({ ...theme, weaknessTags: [...theme.weaknessTags, newTag] });
-          }}
-        >
-          + Add Weakness
-        </Button>
-      )}
-      {editing === theme.id ? (
-        <textarea
-          value={theme.quest}
-          onChange={(e) => updateEntity({ ...theme, quest: e.target.value })}
-          style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
-        />
-      ) : (
-        <div>{theme.quest}</div>
-      )}
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ flexGrow: 1 }}>
+        <div style={{ marginBottom: "4px" }}>
+          <Tag
+            tag={themeAsTag}
+            editing={editing === theme.id}
+            setEditing={setEditing}
+            updateEntity={updateEntity}
+            isTheme={true}
+            removeEntity={undefined}
+            addModifier={addModifier}
+          />
+        </div>
+        {theme.otherTags.map((tag: any) => (
+          <div key={tag.id} style={{ marginBottom: "4px" }}>
+            <Tag
+              tag={tag}
+              editing={editing === theme.id}
+              setEditing={setEditing}
+              updateEntity={updateEntity}
+              removeEntity={undefined}
+              addModifier={addModifier}
+            />
+          </div>
+        ))}
+        {editing === theme.id && (
+          <Button
+            onClick={() => {
+              const newTag = LitmTag.blank();
+              newTag.name = "New Tag";
+              newTag.owner = theme.owner;
+              updateEntity({ ...theme, otherTags: [...theme.otherTags, newTag] });
+            }}
+          >
+            + Add Tag
+          </Button>
+        )}
+        {theme.weaknessTags.map((tag: any, index: number) => (
+          <div key={tag.id} style={{ marginBottom: "4px", ...(index === 0 ? { marginTop: "8px" } : {}) }}>
+            <Tag
+              tag={tag}
+              editing={editing === theme.id}
+              setEditing={setEditing}
+              updateEntity={updateEntity}
+              isWeakness={true}
+              removeEntity={undefined}
+              addModifier={addModifier}
+            />
+          </div>
+        ))}
+        {editing === theme.id && (
+          <Button
+            onClick={() => {
+              const newTag = LitmTag.blank();
+              newTag.name = "New Weakness";
+              newTag.owner = theme.owner;
+              updateEntity({ ...theme, weaknessTags: [...theme.weaknessTags, newTag] });
+            }}
+          >
+            + Add Weakness
+          </Button>
+        )}
+      </div>
+        {editing === theme.id ? (
+          <textarea
+            value={theme.quest}
+            onChange={(e) => updateEntity({ ...theme, quest: e.target.value })}
+            style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
+          />
+        ) : (
+          <div style={{ padding: "4px", margin: "4px 0px", resize: "vertical", minHeight: "60px" }}>{theme.quest}</div>
+        )}
+      <div style={{ display: "flex", justifyContent: "space-around", marginTop: "auto" }}>
         {["abandon", "improve", "milestone"].map((stat) => (
           <div
             key={stat}
@@ -139,7 +145,7 @@ export default function ThemeCard({
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 
   const backContent = (
