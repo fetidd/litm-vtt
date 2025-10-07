@@ -1,5 +1,6 @@
 import constants from "@/constants";
 import type Modifier from "../../litm/modifier";
+import Button from "../Button";
 
 export default function RollWidgetInput({
   selectedModifiers,
@@ -56,21 +57,19 @@ export default function RollWidgetInput({
           </div>
         )}
       </div>
-      <button
+      <Button
+        onClick={onRoll}
         style={{
           background: "#af3814ff",
-          border: "none",
-          borderRadius: "4px",
-          padding: "8px",
+          borderColor: "#af3814ff",
+          color: "white",
           fontWeight: "bold",
-          cursor: "pointer",
           fontSize: "1rem",
           marginTop: "4px",
         }}
-        onClick={onRoll}
       >
         {`Roll${totalModifier ? ` ${totalModifierText}` : ""}`}
-      </button>
+      </Button>
     </div>
   );
 }
