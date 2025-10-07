@@ -272,6 +272,78 @@ export default class LitmDatabase {
           owner: "ben",
           isScratched: false,
         }),
+        HeroTheme.deserialize({
+          id: "example-herotheme-3",
+          name: lorem.generateWords(3),
+          otherTags: [
+            Tag.deserialize({
+              id: "example-othertag-5",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+            Tag.deserialize({
+              id: "example-othertag-6",
+              name: lorem.generateWords(3),
+              isScratched: true,
+              owner: "ben",
+            }),
+          ],
+          weaknessTags: [
+            Tag.deserialize({
+              id: "example-weaknesstag-3",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+          ],
+          might: "greatness",
+          type: "monstrosity",
+          milestone: 1,
+          abandon: 2,
+          improve: 1,
+          quest: lorem.generateSentences(2),
+          description: lorem.generateSentences(3),
+          specialImprovements: [lorem.generateSentences(1), lorem.generateSentences(1), lorem.generateSentences(1)],
+          owner: "ben",
+          isScratched: false,
+        }),
+        HeroTheme.deserialize({
+          id: "example-herotheme-4",
+          name: lorem.generateWords(3),
+          otherTags: [
+            Tag.deserialize({
+              id: "example-othertag-7",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+            Tag.deserialize({
+              id: "example-othertag-8",
+              name: lorem.generateWords(3),
+              isScratched: true,
+              owner: "ben",
+            }),
+          ],
+          weaknessTags: [
+            Tag.deserialize({
+              id: "example-weaknesstag-4",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+          ],
+          might: "origin",
+          type: "companion",
+          milestone: 1,
+          abandon: 2,
+          improve: 1,
+          quest: lorem.generateSentences(2),
+          description: lorem.generateSentences(3),
+          specialImprovements: [lorem.generateSentences(1), lorem.generateSentences(1), lorem.generateSentences(1)],
+          owner: "ben",
+          isScratched: false,
+        }),
       ],
       backpack: [
         Tag.deserialize({

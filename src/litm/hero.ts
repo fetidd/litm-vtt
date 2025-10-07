@@ -24,7 +24,7 @@ export class Hero extends Entity {
     this._promise = n;
   }
   public get maxPromise(): number {
-    return 3;
+    return 5;
   }
 
   static override blank() {

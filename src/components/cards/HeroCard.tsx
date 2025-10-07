@@ -14,27 +14,76 @@ export default function HeroCard({
   addModifier,
 }: HeroCardProps) {
   const [side, setSide] = useState<"front" | "back">("front");
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const handleFlip = () => {
+    setIsFlipping(true);
+    setTimeout(() => {
+      setSide(side === "front" ? "back" : "front");
+      setTimeout(() => setIsFlipping(false), 50);
+    }, 50);
+  };
 
   return (
-    <div style={CARD_STYLE}>
+    <div style={{
+      ...CARD_STYLE,
+      transform: isFlipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
+      transition: 'transform 0.1s linear'
+    }}>
       <div
         style={{
           display: "flex",
           height: "40px",
           background: "rgba(122, 79, 61, 1)",
           color: "white",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
+          padding: "0 8px",
         }}
       >
         <span style={{ fontSize: "1.2rem" }}>HERO</span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleFlip}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            Flip
+          </button>
+          <button
+            onClick={() => setEditing(editing === hero.id ? undefined : hero.id)}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            {editing === hero.id ? "Done" : "Edit"}
+          </button>
+        </div>
       </div>
-      {side == "front" && (
+      {side == "front" && !isFlipping && (
         <>
           {/* Hero name */}
-          <div style={{ fontSize: "2rem", textAlign: "center" }}>
-            {hero.name}
-          </div>
+          {editing === hero.id ? (
+            <input
+              type="text"
+              value={hero.name}
+              onChange={(e) => updateEntity({ ...hero, name: e.target.value })}
+              style={{ fontSize: "2rem", textAlign: "center", border: "none", background: "transparent" }}
+            />
+          ) : (
+            <div style={{ fontSize: "2rem", textAlign: "center" }}>
+              {hero.name}
+            </div>
+          )}
 
           {/* Player name */}
           <h3
@@ -46,7 +95,16 @@ export default function HeroCard({
           >
             Player Name
           </h3>
-          <div style={{ textAlign: "center" }}>{hero.owner}</div>
+          {editing === hero.id ? (
+            <input
+              type="text"
+              value={hero.owner}
+              onChange={(e) => updateEntity({ ...hero, owner: e.target.value })}
+              style={{ textAlign: "center", border: "1px solid #ccc", padding: "4px" }}
+            />
+          ) : (
+            <div style={{ textAlign: "center" }}>{hero.owner}</div>
+          )}
 
           {/* Relationship tags */}
           <h3
@@ -74,7 +132,21 @@ export default function HeroCard({
                   style={{ display: "flex", justifyContent: "space-around" }}
                 >
                   <div style={{ display: "flex" }}>
-                    <span>{name}</span>
+                    {editing === hero.id ? (
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => {
+                          const newRelationships = new Map(hero.relationships);
+                          newRelationships.delete(name);
+                          newRelationships.set(e.target.value, tag);
+                          updateEntity({ ...hero, relationships: newRelationships });
+                        }}
+                        style={{ padding: "2px", width: "80px" }}
+                      />
+                    ) : (
+                      <span>{name}</span>
+                    )}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {/* <div
@@ -93,7 +165,7 @@ export default function HeroCard({
                                     ></div> */}
                     <Tag
                       tag={tag}
-                      editing={false}
+                      editing={editing === hero.id}
                       setEditing={setEditing}
                       updateEntity={updateEntity}
                       removeEntity={undefined}
@@ -103,6 +175,22 @@ export default function HeroCard({
                 </div>
               );
             })}
+            {editing === hero.id && (
+              <button
+                onClick={() => {
+                  const newTag = new (Tag as any)();
+                  newTag.name = "New Relationship";
+                  newTag.owner = hero.owner;
+                  newTag.id = Math.random().toString();
+                  const newRelationships = new Map(hero.relationships);
+                  newRelationships.set("New Person", newTag);
+                  updateEntity({ ...hero, relationships: newRelationships });
+                }}
+                style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+              >
+                + Add Relationship
+              </button>
+            )}
           </div>
 
           {/* Promise */}
@@ -113,7 +201,13 @@ export default function HeroCard({
                 <input
                   key={n}
                   type="checkbox"
-                  onChange={() => {}}
+                  disabled={editing !== hero.id}
+                  onChange={() => {
+                    if (editing === hero.id) {
+                      const newValue = n < hero.promise ? n : n + 1;
+                      updateEntity({ ...hero, promise: newValue });
+                    }
+                  }}
                   checked={n < hero.promise}
                 />
               );
@@ -131,18 +225,42 @@ export default function HeroCard({
             Quintessences
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {[...Array(4).keys()].map((n) => {
-              return (
+            {[...(hero as any).quintessences || []].map((n) => {
+              return editing === hero.id ? (
+                <input
+                  key={n}
+                  type="text"
+                  value={n || ""}
+                  onChange={(e) => {
+                    const newQuintessences = n;
+                    newQuintessences[n] = e.target.value;
+                    updateEntity({ ...hero, quintessences: newQuintessences });
+                  }}
+                  style={{ padding: "4px", margin: "2px" }}
+                  placeholder={`Quintessence ${n + 1}`}
+                />
+              ) : (
                 <span
                   key={n}
                   style={{ padding: "4px" }}
-                >{`Quintessence ${n}`}</span>
+                >{n || ""}</span>
               );
             })}
+            {editing === hero.id && (
+              <button
+                onClick={() => {
+                  const quintessences = (hero as any).quintessences || [];
+                  updateEntity({ ...hero, quintessences: [...quintessences, ""] });
+                }}
+                style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+              >
+                + Add Quintessence
+              </button>
+            )}
           </div>
         </>
       )}
-      {side == "back" && (
+      {side == "back" && !isFlipping && (
         <>
           {/* Backpack */}
           <h3>Backpack</h3>
@@ -152,7 +270,7 @@ export default function HeroCard({
                 <Tag
                   key={tag.id}
                   tag={tag}
-                  editing={false}
+                  editing={editing === hero.id}
                   setEditing={setEditing}
                   updateEntity={updateEntity}
                   removeEntity={undefined}
@@ -160,20 +278,60 @@ export default function HeroCard({
                 />
               );
             })}
+            {editing === hero.id && (
+              <button
+                onClick={() => {
+                  const newTag = new (Tag as any)();
+                  newTag.name = "New Item";
+                  newTag.owner = hero.owner;
+                  newTag.id = Math.random().toString();
+                  updateEntity({ ...hero, backpack: [...hero.backpack, newTag] });
+                }}
+                style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+              >
+                + Add Item
+              </button>
+            )}
           </div>
 
           {/* Notes */}
           <h3>Notes</h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {[...Array(4).keys()].map((n) => {
-              return <span>{`Note ${n}`}</span>;
+            {[...(hero as any).notes || []].map((n) => {
+              return editing === hero.id ? (
+                <textarea
+                  key={n}
+                  value={n || ""}
+                  onChange={(e) => {
+                    const newNotes = n;
+                    newNotes[n] = e.target.value;
+                    updateEntity({ ...hero, notes: newNotes });
+                  }}
+                  style={{ padding: "4px", margin: "2px", resize: "vertical", minHeight: "40px" }}
+                  placeholder={`Note ${n + 1}`}
+                />
+              ) : (
+                <span
+                  key={n}
+                  style={{ padding: "4px" }}
+                >{n || ""}</span>
+              );
             })}
+            {editing === hero.id && (
+              <button
+                onClick={() => {
+                  const notes = (hero as any).notes || [];
+                  updateEntity({ ...hero, notes: [...notes, ""] });
+                }}
+                style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+              >
+                + Add Note
+              </button>
+            )}
           </div>
         </>
       )}
-      <span onClick={() => setSide(side == "front" ? "back" : "front")}>
-        flip
-      </span>
+
     </div>
   );
 }

@@ -14,13 +14,27 @@ export default function HeroThemeCard({
   addModifier,
 }: HeroThemeCardProps) {
   const [side, setSide] = useState<"front" | "back">("front");
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const handleFlip = () => {
+    setIsFlipping(true);
+    setTimeout(() => {
+      setSide(side === "front" ? "back" : "front");
+      setTimeout(() => setIsFlipping(false), 50);
+    }, 50);
+  };
 
   const mightColor = constants.MIGHT_COLORS[theme.might];
 
   const themeAsTag = LitmTag.deserialize(theme);
 
   return (
-    <div style={{ ...CARD_STYLE, margin: "4px" }}>
+    <div style={{
+      ...CARD_STYLE,
+      margin: "4px",
+      transform: isFlipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
+      transition: 'transform 0.1s linear'
+    }}>
       {/* Might and theme type */}
       <div
         style={{
@@ -28,18 +42,45 @@ export default function HeroThemeCard({
           height: "40px",
           background: mightColor,
           color: "white",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
+          padding: "0 8px",
         }}
       >
         <span style={{ fontSize: "1.2rem" }}>{theme.type!.toUpperCase()}</span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleFlip}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            Flip
+          </button>
+          <button
+            onClick={() => setEditing(editing === theme.id ? undefined : theme.id)}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            {editing === theme.id ? "Done" : "Edit"}
+          </button>
+        </div>
       </div>
-      {side == "front" && (
+      {side == "front" && !isFlipping && (
         <>
           {/* Power Tags (first being larger)*/}
           <Tag
             tag={themeAsTag}
-            editing={false}
+            editing={editing === theme.id}
             setEditing={setEditing}
             updateEntity={updateEntity}
             isTheme={true}
@@ -51,7 +92,7 @@ export default function HeroThemeCard({
               <Tag
                 key={tag.id}
                 tag={tag}
-                editing={false}
+                editing={editing === theme.id}
                 setEditing={setEditing}
                 updateEntity={updateEntity}
                 removeEntity={undefined}
@@ -59,13 +100,27 @@ export default function HeroThemeCard({
               />
             );
           })}
+          {editing === theme.id && (
+            <button
+              onClick={() => {
+                const newTag = new (LitmTag as any)();
+                newTag.name = "New Tag";
+                newTag.owner = theme.owner;
+                newTag.id = Math.random().toString();
+                updateEntity({ ...theme, otherTags: [...theme.otherTags, newTag] });
+              }}
+              style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+            >
+              + Add Tag
+            </button>
+          )}
           {/* Weakness tags */}
           {theme.weaknessTags.map((tag) => {
             return (
               <Tag
                 key={tag.id}
                 tag={tag}
-                editing={false}
+                editing={editing === theme.id}
                 setEditing={setEditing}
                 updateEntity={updateEntity}
                 isWeakness={true}
@@ -74,8 +129,30 @@ export default function HeroThemeCard({
               />
             );
           })}
+          {editing === theme.id && (
+            <button
+              onClick={() => {
+                const newTag = new (LitmTag as any)();
+                newTag.name = "New Weakness";
+                newTag.owner = theme.owner;
+                newTag.id = Math.random().toString();
+                updateEntity({ ...theme, weaknessTags: [...theme.weaknessTags, newTag] });
+              }}
+              style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+            >
+              + Add Weakness
+            </button>
+          )}
           {/* Quest */}
-          <div>{theme.quest}</div>
+          {editing === theme.id ? (
+            <textarea
+              value={theme.quest}
+              onChange={(e) => updateEntity({ ...theme, quest: e.target.value })}
+              style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
+            />
+          ) : (
+            <div>{theme.quest}</div>
+          )}
           <div style={{ display: "flex", justifyContent: "space-around" }}>
             {/* Abandon, improve, milestone */}
             {["abandon", "improve", "milestone"].map((stat) => {
@@ -95,7 +172,13 @@ export default function HeroThemeCard({
                         <input
                           key={n}
                           type="checkbox"
-                          onChange={() => {}}
+                          disabled={editing !== theme.id}
+                          onChange={() => {
+                            if (editing === theme.id) {
+                              const newValue = n < (theme as any)[stat] ? n : n + 1;
+                              updateEntity({ ...theme, [stat]: newValue });
+                            }
+                          }}
                           checked={n < (theme as any)[stat]}
                         />
                       );
@@ -107,7 +190,7 @@ export default function HeroThemeCard({
           </div>
         </>
       )}
-      {side == "back" && (
+      {side == "back" && !isFlipping && (
         <>
           <h3
             style={{
@@ -120,7 +203,19 @@ export default function HeroThemeCard({
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {theme.specialImprovements.map((imp, n) => {
-              return (
+              return editing === theme.id ? (
+                <input
+                  key={n}
+                  type="text"
+                  value={imp}
+                  onChange={(e) => {
+                    const newImprovements = [...theme.specialImprovements];
+                    newImprovements[n] = e.target.value;
+                    updateEntity({ ...theme, specialImprovements: newImprovements });
+                  }}
+                  style={{ padding: "4px", margin: "2px" }}
+                />
+              ) : (
                 <span
                   key={n}
                   style={{ padding: "4px" }}
@@ -130,9 +225,7 @@ export default function HeroThemeCard({
           </div>
         </>
       )}
-      <span onClick={() => setSide(side == "front" ? "back" : "front")}>
-        flip
-      </span>
+
     </div>
   );
 }

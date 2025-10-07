@@ -13,29 +13,69 @@ export default function FellowshipThemeCard({
   addModifier,
 }: FellowshipThemeCardProps) {
   const [side, setSide] = useState<"front" | "back">("front");
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const handleFlip = () => {
+    setIsFlipping(true);
+    setTimeout(() => {
+      setSide(side === "front" ? "back" : "front");
+      setTimeout(() => setIsFlipping(false), 50);
+    }, 50);
+  };
 
   const themeAsTag = LitmTag.deserialize(theme);
 
   return (
-    <div style={CARD_STYLE}>
+    <div style={{
+      ...CARD_STYLE,
+      transform: isFlipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
+      transition: 'transform 0.1s linear'
+    }}>
       <div
         style={{
           display: "flex",
           height: "40px",
           background: "rgba(97, 61, 46, 1)",
           color: "white",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
+          padding: "0 8px",
         }}
       >
         <span style={{ fontSize: "1.2rem" }}>FELLOWSHIP</span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleFlip}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            Flip
+          </button>
+          <button
+            onClick={() => setEditing(editing === theme.id ? undefined : theme.id)}
+            style={{
+              background: "transparent",
+              border: "1px solid white",
+              color: "white",
+              padding: "4px 8px",
+              cursor: "pointer",
+            }}
+          >
+            {editing === theme.id ? "Done" : "Edit"}
+          </button>
+        </div>
       </div>
-      {side == "front" && (
+      {side == "front" && !isFlipping && (
         <>
           {/* Power Tags (first being larger)*/}
                     <Tag
                       tag={themeAsTag}
-                      editing={false}
+                      editing={editing === theme.id}
                       setEditing={setEditing}
                       updateEntity={updateEntity}
                       isTheme={true}
@@ -47,7 +87,7 @@ export default function FellowshipThemeCard({
                         <Tag
                           key={tag.id}
                           tag={tag}
-                          editing={false}
+                          editing={editing === theme.id}
                           setEditing={setEditing}
                           updateEntity={updateEntity}
                           removeEntity={undefined}
@@ -55,13 +95,26 @@ export default function FellowshipThemeCard({
                         />
                       );
                     })}
+                    {editing === theme.id && (
+                      <button
+                        onClick={() => {
+                          const newTag = LitmTag.blank();
+                          newTag.name = "New Tag";
+                          newTag.owner = theme.owner;
+                          updateEntity({ ...theme, otherTags: [...theme.otherTags, newTag] });
+                        }}
+                        style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+                      >
+                        + Add Tag
+                      </button>
+                    )}
                     {/* Weakness tags */}
                     {theme.weaknessTags.map((tag) => {
                       return (
                         <Tag
                           key={tag.id}
                           tag={tag}
-                          editing={false}
+                          editing={editing === theme.id}
                           setEditing={setEditing}
                           updateEntity={updateEntity}
                           isWeakness={true}
@@ -70,8 +123,29 @@ export default function FellowshipThemeCard({
                         />
                       );
                     })}
+                    {editing === theme.id && (
+                      <button
+                        onClick={() => {
+                          const newTag = LitmTag.blank();
+                          newTag.name = "New Weakness";
+                          newTag.owner = theme.owner;
+                          updateEntity({ ...theme, weaknessTags: [...theme.weaknessTags, newTag] });
+                        }}
+                        style={{ padding: "4px", margin: "2px", cursor: "pointer" }}
+                      >
+                        + Add Weakness
+                      </button>
+                    )}
                     {/* Quest */}
-                    <div>{theme.quest}</div>
+                    {editing === theme.id ? (
+                      <textarea
+                        value={theme.quest}
+                        onChange={(e) => updateEntity({ ...theme, quest: e.target.value })}
+                        style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
+                      />
+                    ) : (
+                      <div>{theme.quest}</div>
+                    )}
                     <div style={{ display: "flex", justifyContent: "space-around" }}>
                       {/* Abandon, improve, milestone */}
                       {["abandon", "improve", "milestone"].map((stat) => {
@@ -91,7 +165,13 @@ export default function FellowshipThemeCard({
                                   <input
                                     key={n}
                                     type="checkbox"
-                                    onChange={() => {}}
+                                    disabled={editing !== theme.id}
+                                    onChange={() => {
+                                      if (editing === theme.id) {
+                                        const newValue = n < (theme as any)[stat] ? n : n + 1;
+                                        updateEntity({ ...theme, [stat]: newValue });
+                                      }
+                                    }}
                                     checked={n < (theme as any)[stat]}
                                   />
                                 );
@@ -103,7 +183,7 @@ export default function FellowshipThemeCard({
                     </div>
         </>
       )}
-      {side == "back" && (
+      {side == "back" && !isFlipping && (
         <>
           <h3
             style={{
@@ -116,7 +196,19 @@ export default function FellowshipThemeCard({
           </h3>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {theme.specialImprovements.map((imp, n) => {
-              return (
+              return editing === theme.id ? (
+                <input
+                  key={n}
+                  type="text"
+                  value={imp}
+                  onChange={(e) => {
+                    const newImprovements = [...theme.specialImprovements];
+                    newImprovements[n] = e.target.value;
+                    updateEntity({ ...theme, specialImprovements: newImprovements });
+                  }}
+                  style={{ padding: "4px", margin: "2px" }}
+                />
+              ) : (
                 <span
                   key={n}
                   style={{ padding: "4px" }}
@@ -126,9 +218,7 @@ export default function FellowshipThemeCard({
           </div>
         </>
       )}
-      <span onClick={() => setSide(side == "front" ? "back" : "front")}>
-        flip
-      </span>
+
     </div>
   );
 }
