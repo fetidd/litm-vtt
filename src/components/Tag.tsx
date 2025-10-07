@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import constant, { iconStyle } from "../constants";
 import { Tag as LitmTag } from "../litm/tag";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
@@ -12,6 +12,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/solid";
 import type { Entity } from "@/litm/entity";
+import { UserContext } from "@/App";
 
 export default function Tag({
   tag,
@@ -39,7 +40,6 @@ export default function Tag({
     alignContent: "center",
     fontSize: isTheme ? "1.2rem" : "1rem",
     fontStyle: "italic",
-    cursor: "pointer",
   };
   let tagObj = <span style={{ textAlign: "center" }}>{tag.name}</span>;
 
@@ -86,6 +86,8 @@ export default function Tag({
       />
     );
   }
+  const user = useContext(UserContext);
+  const isMine = user?.username == tag.owner;
 
   return (
     <>
@@ -94,7 +96,7 @@ export default function Tag({
       </div>
       {createPortal(
         <Menu id={MENU_ID}>
-          {tag.canBurn && !tag.isScratched && (
+          {isMine && tag.canBurn && !tag.isScratched && (
             <Item onClick={() => addModifier(tag, "add", true)}>
               {<FireIcon style={iconStyle} />}
               {`Burn tag`}
@@ -112,7 +114,7 @@ export default function Tag({
               {`Subtract tag`}
             </Item>
           )}
-          {tag.canScratch && (
+          {isMine && tag.canScratch && (
             <Item
               onClick={() =>
                 updateEntity(tag.id, (e) => {
@@ -125,12 +127,16 @@ export default function Tag({
               {`${tag.isScratched ? "Uns" : "S"}cratch tag`}
             </Item>
           )}
-          <Item onClick={() => setEditing(tag.id)}>
-            {<PencilIcon style={iconStyle} />}Edit
-          </Item>
-          <Item onClick={() => removeEntity(tag)}>
-            {<TrashIcon style={iconStyle} />}Remove
-          </Item>
+          {isMine && (
+            <>
+              <Item onClick={() => setEditing(tag.id)}>
+                {<PencilIcon style={iconStyle} />}Edit
+              </Item>
+              <Item onClick={() => removeEntity(tag)}>
+                {<TrashIcon style={iconStyle} />}Remove
+              </Item>
+            </>
+          )}
         </Menu>,
         document.body,
       )}

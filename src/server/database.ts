@@ -1,4 +1,5 @@
 import type { Entity, EntityType } from "@/litm/entity";
+import { Fellowship } from "@/litm/fellowship";
 import { deserializeRawEntity } from "@/litm/helpers";
 import { Hero } from "@/litm/hero";
 import type { Might } from "@/litm/might";
@@ -10,6 +11,7 @@ import User from "@/user";
 import { generateId } from "@/utils";
 import { readableStreamToFormData } from "bun";
 import { Database, type Changes, type SQLQueryBindings } from "bun:sqlite";
+import { LoremIpsum } from "lorem-ipsum";
 
 export default class LitmDatabase {
   db: Database;
@@ -52,15 +54,30 @@ export default class LitmDatabase {
       )
       .run();
     this.db
-      .query("CREATE TABLE Fellowship (id STRING PRIMARY KEY NOT NULL);")
-      .run();
-    this.db
       .query(
         `CREATE TABLE HeroTheme (
             id STRING PRIMARY KEY NOT NULL,
             name STRING NOT NULL, 
             might STRING NOT NULL DEFAULT 'origin', 
             type STRING NOT NULL DEFAULT '',
+            otherTags STRING NOT NULL DEFAULT "",
+            weaknessTags STRING NOT NULL DEFAULT "",
+            improve INTEGER,
+            milestone INTEGER,
+            abandon INTEGER,
+            description STRING NOT NULL DEFAULT "",
+            quest STRING NOT NULL DEFAULT "",
+            specialImprovements STRING NOT NULL DEFAULT "",
+            owner STRING NOT NULL,
+            isScratched BOOLEAN NOT NULL
+            );`,
+      )
+      .run();
+    this.db
+      .query(
+        `CREATE TABLE Fellowship (
+            id STRING PRIMARY KEY NOT NULL,
+            name STRING NOT NULL, 
             otherTags STRING NOT NULL DEFAULT "",
             weaknessTags STRING NOT NULL DEFAULT "",
             improve INTEGER,
@@ -94,43 +111,76 @@ export default class LitmDatabase {
     //tags
     ["sharp", "strong", "sword", "woodsman's axe", "travel supplies"].forEach(
       (tag, i) => {
-        const id = `example-tag-${i}`;
-        this.db
-          .query<
-            { id: string; name: string; isScratched: boolean },
-            SQLQueryBindings[]
-          >(`INSERT INTO Tag VALUES ($id, $name, $isScratched, $owner);`)
-          .run({ $id: id, $name: tag, $isScratched: false, $owner: "ben" });
-        this.db
-          .query(
-            `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${i * 50});`,
-          )
-          .run();
+        const t = Tag.deserialize({
+          id: `example-tag-${i}`,
+          name: tag,
+          isScratched: false,
+          owner: i == 1 ? "gemma" : "ben",
+        });
+        this.insertTag(t);
+        this.addEntityToGameBoard(t, i * 50, i * 50);
       },
     );
 
     // statuses
     ["drunk", "warded", "damaged", "burning", "intimidated"].forEach(
       (status, i) => {
-        const id = `example-status-${i}`;
-        this.db
-          .query<
-            { id: string; name: string; tiers: string },
-            SQLQueryBindings[]
-          >(`INSERT INTO Status VALUES ($id, $name, $tiers, $owner);`)
-          .run({
-            $id: id,
-            $name: status,
-            $tiers: (i + 1).toString(),
-            $owner: "ben",
-          });
-        this.db
-          .query(
-            `INSERT INTO GameTableState VALUES ('${id}', ${i * 50}, ${i * 50 + 200})`,
-          )
-          .run();
+        const s = Status.deserialize({
+          id: `example-status-${i}`,
+          name: status,
+          tiers: [i+1],
+          owner: i == 1 ? "gemma" : "ben",
+        });
+        this.insertStatus(s);
+        this.addEntityToGameBoard(s, i * 50, i * 50 + 200);
       },
     );
+
+    const lorem = new LoremIpsum({
+      wordsPerSentence: {
+        max: 16,
+        min: 4,
+      },
+    });
+
+    lorem.generateWords(3);
+    lorem.generateSentences(3);
+    // fellowships
+    const fellowship1 = Fellowship.deserialize({
+      id: "example-fellowship-1",
+      name: lorem.generateWords(3),
+      otherTags: [
+        Tag.deserialize({
+          id: "example-fellowshipothertag-1",
+          name: lorem.generateWords(3),
+          isScratched: false,
+          owner: "ben",
+        }),
+        Tag.deserialize({
+          id: "example-fellowshipothertag-2",
+          name: lorem.generateWords(3),
+          isScratched: true,
+          owner: "ben",
+        }),
+      ],
+      weaknessTags: [
+        Tag.deserialize({
+          id: "example-fellowshipweaknesstag-1",
+          name: lorem.generateWords(3),
+          isScratched: false,
+          owner: "ben",
+        }),
+      ],
+      milestone: 1,
+      abandon: 2,
+      improve: 1,
+      quest: lorem.generateSentences(2),
+      description: lorem.generateSentences(3),
+      specialImprovements: [lorem.generateSentences(1), lorem.generateSentences(1), lorem.generateSentences(1)],
+      owner: "ben",
+      isScratched: false,
+    });
+    this.insertFellowship(fellowship1);
 
     // heroes
     this.db
@@ -140,29 +190,29 @@ export default class LitmDatabase {
       >(`INSERT INTO Tag VALUES ($id, $name, $isScratched, $owner);`)
       .run({
         $id: "example-tag-5",
-        $name: "don't take no shit",
+        $name: lorem.generateWords(3),
         $isScratched: false,
         $owner: "ben",
       });
     const hero: Hero = Hero.deserialize({
       id: "example-hero-1",
-      name: "John De'Stroyer",
+      name: lorem.generateWords(3),
       promise: 2,
       description: "",
       themes: [
         HeroTheme.deserialize({
           id: "example-herotheme-1",
-          name: "Sassy",
+          name: lorem.generateWords(3),
           otherTags: [
             Tag.deserialize({
               id: "example-othertag-1",
-              name: "take no shit",
+              name: lorem.generateWords(3),
               isScratched: false,
               owner: "ben",
             }),
             Tag.deserialize({
               id: "example-othertag-2",
-              name: "always be best",
+              name: lorem.generateWords(3),
               isScratched: true,
               owner: "ben",
             }),
@@ -170,7 +220,7 @@ export default class LitmDatabase {
           weaknessTags: [
             Tag.deserialize({
               id: "example-weaknesstag-1",
-              name: "I have no friends...",
+              name: lorem.generateWords(3),
               isScratched: false,
               owner: "ben",
             }),
@@ -180,9 +230,45 @@ export default class LitmDatabase {
           milestone: 1,
           abandon: 2,
           improve: 1,
-          quest: "Never take shit",
-          description: "",
-          specialImprovements: [],
+          quest: lorem.generateSentences(2),
+          description: lorem.generateSentences(3),
+          specialImprovements: ["improvement1", "improvement2"],
+          owner: "ben",
+          isScratched: false,
+        }),
+        HeroTheme.deserialize({
+          id: "example-herotheme-2",
+          name: lorem.generateWords(3),
+          otherTags: [
+            Tag.deserialize({
+              id: "example-othertag-3",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+            Tag.deserialize({
+              id: "example-othertag-4",
+              name: lorem.generateWords(3),
+              isScratched: true,
+              owner: "ben",
+            }),
+          ],
+          weaknessTags: [
+            Tag.deserialize({
+              id: "example-weaknesstag-2",
+              name: lorem.generateWords(3),
+              isScratched: false,
+              owner: "ben",
+            }),
+          ],
+          might: "adventure",
+          type: "relic",
+          milestone: 1,
+          abandon: 2,
+          improve: 1,
+          quest: lorem.generateSentences(2),
+          description: lorem.generateSentences(3),
+          specialImprovements: [lorem.generateSentences(1), lorem.generateSentences(1), lorem.generateSentences(1)],
           owner: "ben",
           isScratched: false,
         }),
@@ -190,7 +276,7 @@ export default class LitmDatabase {
       backpack: [
         Tag.deserialize({
           id: "example-backpacktag-1",
-          name: "pointy stick",
+          name: lorem.generateWords(3),
           isScratched: false,
           owner: "ben",
         }),
@@ -200,13 +286,13 @@ export default class LitmDatabase {
           "Geoff",
           Tag.deserialize({
             id: "example-relationshiptag-1",
-            name: "My only friend",
+            name: lorem.generateWords(3),
             isScratched: false,
             owner: "ben",
           }),
         ],
       ],
-      fellowship: "",
+      fellowship: fellowship1,
       owner: "ben",
     });
     this.insertHero(hero);
@@ -288,6 +374,63 @@ export default class LitmDatabase {
       .run(heroThemeInsertObj);
   }
 
+  insertFellowship(theme: Fellowship) {
+    const otherTags = this.insertEntityList<Tag>(
+      theme.otherTags,
+      this.insertTag.bind(this),
+    );
+    const weaknessTags = this.insertEntityList<Tag>(
+      theme.weaknessTags,
+      this.insertTag.bind(this),
+    );
+    const fellowshipInsertObj = {
+      $id: theme.id,
+      $name: theme.name,
+      $otherTags: otherTags,
+      $weaknessTags: weaknessTags,
+      $improve: theme.improve,
+      $milestone: theme.milestone,
+      $abandon: theme.abandon,
+      $description: theme.description,
+      $quest: theme.quest,
+      $specialImprovements: theme.specialImprovements.join(","),
+      $owner: theme.owner,
+      $isScratched: theme.isScratched,
+    };
+    console.log(fellowshipInsertObj);
+    this.db
+      .query(
+        `INSERT INTO Fellowship VALUES ($id, $name, $otherTags, $weaknessTags, $improve, $milestone, $abandon, $description, $quest, $specialImprovements, $owner, $isScratched)`,
+      )
+      .run(fellowshipInsertObj);
+  }
+
+  getFellowshipById(id: string): Fellowship {
+    const rawFship: any = this.db
+      .query<
+        { id: string; name: string; isScratched: boolean },
+        SQLQueryBindings[]
+      >("SELECT * FROM Fellowship WHERE id = $id")
+      .get({ $id: id });
+    if (!rawFship) {
+      throw new Error(`Fellowship ${id} does not exist`);
+    }
+    if (rawFship.otherTags) {
+      console.log(rawFship);
+      rawFship.otherTags = rawFship.otherTags
+        .split(",")
+        .map((t: string) => this.getTagById(t));
+    } else rawFship.otherTags = [];
+    if (rawFship.weaknessTags) {
+      rawFship.weaknessTags = rawFship.weaknessTags
+        .split(",")
+        .map((t: string) => this.getTagById(t));
+    } else rawFship.weaknessTags = [];
+    rawFship.specialImprovements = rawFship.specialImprovements.split(",");
+    const fellowship = Fellowship.deserialize(rawFship);
+    return fellowship;
+  }
+
   insertHero(hero: Hero) {
     const relString = this.insertEntityMap<Tag>(
       hero.relationships,
@@ -309,7 +452,7 @@ export default class LitmDatabase {
       $themes: themes,
       $backpack: backpack,
       $relationships: relString,
-      $fellowship: "",
+      $fellowship: hero.fellowship != undefined ? hero.fellowship.id : "",
       $owner: hero.owner,
     };
     console.log(heroInsertObj);
@@ -366,11 +509,13 @@ export default class LitmDatabase {
         var relationships: (string | Tag)[][] = [];
       }
       // add fellowship
+      const fellowship = this.getFellowshipById(raw.fellowship);
       const toDes = {
         ...raw,
         backpack: backpack,
         relationships: relationships,
         themes: themes,
+        fellowship: fellowship,
         entityType: "hero",
       };
       const des = Hero.deserialize(toDes);
@@ -411,6 +556,7 @@ export default class LitmDatabase {
         .split(",")
         .map((t: string) => this.getTagById(t));
     } else rawTheme.weaknessTags = [];
+    rawTheme.specialImprovements = rawTheme.specialImprovements.split(",");
     const theme = HeroTheme.deserialize(rawTheme);
     return theme;
   }

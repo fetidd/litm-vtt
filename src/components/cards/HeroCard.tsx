@@ -17,6 +17,18 @@ export default function HeroCard({
 
   return (
     <div style={CARD_STYLE}>
+      <div
+        style={{
+          display: "flex",
+          height: "40px",
+          background: "rgba(122, 79, 61, 1)",
+          color: "white",
+          justifyContent: "space-around",
+          alignItems: "center",
+        }}
+      >
+        <span style={{ fontSize: "1.2rem" }}>HERO</span>
+      </div>
       {side == "front" && (
         <>
           {/* Hero name */}
@@ -54,7 +66,7 @@ export default function HeroCard({
               gap: "2px",
             }}
           >
-            {hero.relationships.entries().map((value) => {
+            {[...hero.relationships.entries()].map((value) => {
               const [name, tag] = value;
               return (
                 <div

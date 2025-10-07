@@ -34,7 +34,7 @@ export const UserContext: Context<User | null> = createContext(
 
 export function App() {
   const [user, setUser] = useState<User>({
-    username: "Fetiddius",
+    username: "ben",
     role: "narrator",
   } as User);
 

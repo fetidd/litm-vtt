@@ -2,7 +2,7 @@ import { Entity } from "@/litm/entity";
 import constant, { iconStyle } from "../constants";
 import { Status as LitmStatus } from "../litm/status";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
 import { createPortal } from "react-dom";
 import {
@@ -12,6 +12,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
+import { UserContext } from "@/App";
 
 export default function Status({
   status,
@@ -36,7 +37,6 @@ export default function Status({
     color: "#333",
     alignContent: "center",
     fontStyle: "italic",
-    cursor: "pointer",
   };
 
   function performUpdate() {
@@ -87,6 +87,9 @@ export default function Status({
     );
   }
 
+  const user = useContext(UserContext);
+  const isMine = user?.username == status.owner;
+
   return (
     <>
       <div style={style} onContextMenu={displayContextMenu}>
@@ -102,53 +105,56 @@ export default function Status({
             {<MinusIcon style={iconStyle} />}
             {`Subtract status`}
           </Item>
+          {isMine && (
+            <>
+              <Item
+                closeOnClick={false}
+                onClick={() => {
+                  updateEntity(status.id, (e) => {
+                    status.decreaseTier(status.value > 1 ? 1 : 0);
+                    return e;
+                  });
+                }}
+              >
+                {<ArrowDownIcon style={iconStyle} />}Decrease tier
+              </Item>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6].map((n) => {
+                  return (
+                    <Item
+                      style={{
+                        border: status.hasTier(n)
+                          ? `4px solid ${constant.STATUS_COLOR}`
+                          : "4px solid transparent",
+                        borderRadius: "4px",
+                      }}
+                      onClick={() => {
+                        updateEntity(status.id, (e) => {
+                          status.addTier(n);
+                          return e;
+                        });
+                      }}
+                    >
+                      {n}
+                    </Item>
+                  );
+                })}
+              </div>
 
-          <Item
-            closeOnClick={false}
-            onClick={() => {
-              updateEntity(status.id, (e) => {
-                status.decreaseTier(status.value > 1 ? 1 : 0);
-                return e;
-              });
-            }}
-          >
-            {<ArrowDownIcon style={iconStyle} />}Decrease tier
-          </Item>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            {[1, 2, 3, 4, 5, 6].map((n) => {
-              return (
-                <Item
-                  style={{
-                    border: status.hasTier(n)
-                      ? `4px solid ${constant.STATUS_COLOR}`
-                      : "4px solid transparent",
-                    borderRadius: "4px",
-                  }}
-                  onClick={() => {
-                    updateEntity(status.id, (e) => {
-                      status.addTier(n);
-                      return e;
-                    });
-                  }}
-                >
-                  {n}
-                </Item>
-              );
-            })}
-          </div>
-
-          <Item onClick={() => setEditing(status.id)}>
-            {<PencilIcon style={iconStyle} />}Edit
-          </Item>
-          <Item onClick={() => removeEntity(status)}>
-            {<TrashIcon style={iconStyle} />}Remove
-          </Item>
+              <Item onClick={() => setEditing(status.id)}>
+                {<PencilIcon style={iconStyle} />}Edit
+              </Item>
+              <Item onClick={() => removeEntity(status)}>
+                {<TrashIcon style={iconStyle} />}Remove
+              </Item>
+            </>
+          )}
         </Menu>,
         document.body,
       )}

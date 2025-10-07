@@ -8,6 +8,7 @@ import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
 import ThemeCard from "../cards/HeroThemeCard";
 import { HeroTheme as LitmTheme } from "@/litm/theme";
 import { Tag } from "@/litm/tag";
+import FellowshipThemeCard from "../cards/FellowshipThemeCard";
 
 export default function Drawer({
   websocket,
@@ -61,6 +62,16 @@ export default function Drawer({
               />
             );
           })}
+        {hero && hero.fellowship && (
+          <FellowshipThemeCard
+            theme={hero.fellowship}
+            editing={editing}
+            setEditing={setEditing}
+            updateEntity={updateEntity}
+            addModifier={addModifier}
+            removeEntity={undefined}
+          />
+        )}
       </TransformComponent>
     </div>
   );

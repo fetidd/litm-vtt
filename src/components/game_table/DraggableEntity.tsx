@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Entity, ModifierEntity } from "../../litm/entity";
 import { Tag as LitmTag } from "../../litm/tag";
@@ -26,6 +26,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { createPortal } from "react-dom";
+import { UserContext } from "@/App";
 
 type DraggableEntityProps = {
   id: string;
@@ -74,12 +75,15 @@ export function DraggableEntity({
     bounds.maxY - yBound,
   );
 
+  const user = useContext(UserContext);
+  const isMine = user?.username == entity.owner;
+
   const style: React.CSSProperties = {
     boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.47)",
     position: "absolute",
     left: left,
     top: top,
-    cursor: "grab",
+    cursor: isMine ? "grab" : "default",
     userSelect: "none",
     zIndex: zIndex,
     touchAction: "none",
@@ -98,16 +102,19 @@ export function DraggableEntity({
     });
   }
 
+  const draggableAttrs = { ...listeners, ...attributes };
+  let wrapperAttrs = {
+    className: "draggable-entity",
+    ref: setNodeRef,
+    style: style,
+    onContextMenu: displayContextMenu,
+  };
+  if (isMine) {
+    wrapperAttrs = { ...wrapperAttrs, ...draggableAttrs };
+  }
   return (
     <>
-      <div
-        className="draggable-entity"
-        ref={setNodeRef}
-        style={style}
-        onContextMenu={displayContextMenu}
-        {...listeners}
-        {...attributes}
-      >
+      <div {...wrapperAttrs}>
         {entity.entityType == "tag" && (
           <Tag
             tag={entity as LitmTag}

@@ -7,7 +7,7 @@ export type EntityType =
   | "status"
   | "hero"
   | "challenge"
-  | "fellowship";
+  | "fellowship-theme";
 
 export abstract class Entity {
   abstract entityType: EntityType;

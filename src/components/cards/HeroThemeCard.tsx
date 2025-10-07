@@ -107,7 +107,29 @@ export default function HeroThemeCard({
           </div>
         </>
       )}
-      {side == "back" && <>{/* Special improvements */}</>}
+      {side == "back" && (
+        <>
+          <h3
+            style={{
+              margin: "1px",
+              backgroundColor: "rgba(204, 165, 126, 0.43)",
+              textAlign: "center",
+            }}
+          >
+            Special Improvements
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {theme.specialImprovements.map((imp, n) => {
+              return (
+                <span
+                  key={n}
+                  style={{ padding: "4px" }}
+                >{imp}</span>
+              );
+            })}
+          </div>
+        </>
+      )}
       <span onClick={() => setSide(side == "front" ? "back" : "front")}>
         flip
       </span>
