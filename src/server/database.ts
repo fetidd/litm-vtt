@@ -438,7 +438,6 @@ export default class LitmDatabase {
       $owner: theme.owner,
       $isScratched: theme.isScratched,
     };
-    console.log(heroThemeInsertObj);
     this.db
       .query(
         `INSERT INTO HeroTheme VALUES ($id, $name, $might, $type, $otherTags, $weaknessTags, $improve, $milestone, $abandon, $description, $quest, $specialImprovements, $owner, $isScratched)`,
@@ -469,7 +468,6 @@ export default class LitmDatabase {
       $owner: theme.owner,
       $isScratched: theme.isScratched,
     };
-    console.log(fellowshipInsertObj);
     this.db
       .query(
         `INSERT INTO Fellowship VALUES ($id, $name, $otherTags, $weaknessTags, $improve, $milestone, $abandon, $description, $quest, $specialImprovements, $owner, $isScratched)`,
@@ -488,7 +486,6 @@ export default class LitmDatabase {
       throw new Error(`Fellowship ${id} does not exist`);
     }
     if (rawFship.otherTags) {
-      console.log(rawFship);
       rawFship.otherTags = rawFship.otherTags
         .split(",")
         .map((t: string) => this.getTagById(t));
@@ -527,7 +524,6 @@ export default class LitmDatabase {
       $fellowship: hero.fellowship != undefined ? hero.fellowship.id : "",
       $owner: hero.owner,
     };
-    console.log(heroInsertObj);
     this.db
       .query<
         {
@@ -618,7 +614,6 @@ export default class LitmDatabase {
       throw new Error(`Theme ${id} does not exist`);
     }
     if (rawTheme.otherTags) {
-      console.log(rawTheme);
       rawTheme.otherTags = rawTheme.otherTags
         .split(",")
         .map((t: string) => this.getTagById(t));
