@@ -20,9 +20,8 @@ export default {
 export const CARD_STYLE: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  justifyContent: "space-between",
   background: "#dbc49aff",
-  border: "3px solid #804f33ff",
+  border: "3px solid transparent",
   borderRadius: "4px",
   width: `300px`,
   minWidth: "300px",

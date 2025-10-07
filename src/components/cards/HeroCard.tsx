@@ -30,7 +30,8 @@ export default function HeroCard({
       {/* Player name */}
       <h3
         style={{
-          margin: "1px",
+          margin: "1px -12px",
+          padding: "4px 12px",
           backgroundColor: "rgba(204, 165, 126, 0.43)",
           textAlign: "center",
         }}
@@ -51,7 +52,8 @@ export default function HeroCard({
       {/* Relationship tags */}
       <h3
         style={{
-          margin: "1px",
+          margin: "1px -12px",
+          padding: "4px 12px",
           backgroundColor: "rgba(204, 165, 126, 0.43)",
           textAlign: "center",
         }}
@@ -144,7 +146,8 @@ export default function HeroCard({
       {/* Quintessences */}
       <h3
         style={{
-          margin: "1px",
+          margin: "1px -12px",
+          padding: "4px 12px",
           backgroundColor: "rgba(204, 165, 126, 0.43)",
           textAlign: "center",
         }}
@@ -190,7 +193,7 @@ export default function HeroCard({
   const backContent = (
     <>
       {/* Backpack */}
-      <h3>Backpack</h3>
+      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Backpack</h3>
       <div style={{ display: "flex", flexDirection: "column" }}>
         {hero.backpack.map((tag) => {
           return (
@@ -221,7 +224,7 @@ export default function HeroCard({
       </div>
 
       {/* Notes */}
-      <h3>Notes</h3>
+      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Notes</h3>
       <div style={{ display: "flex", flexDirection: "column" }}>
         {[...(hero as any).notes || []].map((n) => {
           return editing === hero.id ? (

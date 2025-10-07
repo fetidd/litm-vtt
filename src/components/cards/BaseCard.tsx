@@ -40,6 +40,7 @@ export default function BaseCard({
     <div style={{
       ...CARD_STYLE,
       ...style,
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
       transform: isFlipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
       transition: 'transform 0.1s linear'
     }}>
@@ -52,6 +53,8 @@ export default function BaseCard({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0 8px",
+          border: "0 none",
+          borderRadius: "4px",
         }}
       >
         <span style={{ fontSize: "1.2rem" }}>{title}</span>
@@ -67,8 +70,8 @@ export default function BaseCard({
           </Button>
         </div>
       </div>
-      {side === "front" && !isFlipping && frontContent}
-      {side === "back" && !isFlipping && backContent}
+      {side === "front" && !isFlipping && <div style={{ padding: "12px" }}>{frontContent}</div>}
+      {side === "back" && !isFlipping && <div style={{ padding: "12px" }}>{backContent}</div>}
     </div>
   );
 }

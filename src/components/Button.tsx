@@ -16,6 +16,7 @@ export default function Button({
   const baseStyle = {
     background: "transparent",
     border: "1px solid",
+    borderRadius: "4px",
     padding: "4px 8px",
     cursor: "pointer",
   };

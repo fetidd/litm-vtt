@@ -146,7 +146,8 @@ export default function ThemeCard({
     <>
       <h3
         style={{
-          margin: "1px",
+          margin: "1px -12px",
+          padding: "4px 12px",
           backgroundColor: "rgba(204, 165, 126, 0.43)",
           textAlign: "center",
         }}
