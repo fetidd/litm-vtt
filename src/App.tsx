@@ -44,8 +44,14 @@ export function App() {
     { id: string; text: string }[]
   >([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
-  const [drawerHeight, setDrawerHeight] = useState(200);
-  const [rollWidgetWidth, setRollWidgetWidth] = useState(300);
+  const [drawerHeight, setDrawerHeight] = useState(() => {
+    const saved = localStorage.getItem('drawerHeight');
+    return saved ? parseInt(saved) : 200;
+  });
+  const [rollWidgetWidth, setRollWidgetWidth] = useState(() => {
+    const saved = localStorage.getItem('rollWidgetWidth');
+    return saved ? parseInt(saved) : 300;
+  });
 
   // WEBSOCKET HANDLING
   useEffect(() => {
@@ -117,6 +123,7 @@ export function App() {
       const maxHeight = window.innerHeight * 0.75;
       const newHeight = Math.max(100, Math.min(maxHeight, startHeight + deltaY));
       setDrawerHeight(newHeight);
+      localStorage.setItem('drawerHeight', newHeight.toString());
     };
 
     const handleMouseUp = () => {
@@ -138,6 +145,7 @@ export function App() {
       const maxWidth = window.innerWidth * 0.75;
       const newWidth = Math.max(200, Math.min(maxWidth, startWidth + deltaX));
       setRollWidgetWidth(newWidth);
+      localStorage.setItem('rollWidgetWidth', newWidth.toString());
     };
 
     const handleMouseUp = () => {
@@ -165,6 +173,8 @@ export function App() {
       const newHeight = Math.max(100, Math.min(maxHeight, startHeight + deltaY));
       setRollWidgetWidth(newWidth);
       setDrawerHeight(newHeight);
+      localStorage.setItem('rollWidgetWidth', newWidth.toString());
+      localStorage.setItem('drawerHeight', newHeight.toString());
     };
 
     const handleMouseUp = () => {
