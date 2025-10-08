@@ -26,8 +26,6 @@ export const CARD_STYLE: React.CSSProperties = {
   width: `300px`,
   minWidth: "300px",
   maxWidth: "300px",
-  minHeight: `600px`,
-  maxHeight: "600px",
   color: "#333",
   alignContent: "center",
 };
