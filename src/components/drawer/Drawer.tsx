@@ -29,7 +29,7 @@ export default function Drawer({
   
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (user?.role === "narrator") {
-      return allHeroes.length > 0 ? allHeroes[0].owner : "challenges";
+      return allHeroes.length > 0 ? allHeroes[0]!.owner : "challenges";
     }
     return "my-hero";
   });
@@ -131,8 +131,6 @@ export default function Drawer({
               <>
                 <HeroCard
                   hero={activeHero}
-                  editing={editing}
-                  setEditing={setEditing}
                   updateEntity={updateEntity}
                   addModifier={addModifier}
                   removeEntity={undefined}
@@ -141,8 +139,6 @@ export default function Drawer({
                   <ThemeCard
                     key={theme.id}
                     theme={theme as LitmTheme}
-                    editing={editing}
-                    setEditing={setEditing}
                     updateEntity={updateEntity}
                     addModifier={addModifier}
                     removeEntity={undefined}
@@ -151,8 +147,6 @@ export default function Drawer({
                 {activeHero.fellowship && (
                   <FellowshipThemeCard
                     theme={activeHero.fellowship}
-                    editing={editing}
-                    setEditing={setEditing}
                     updateEntity={updateEntity}
                     addModifier={addModifier}
                     removeEntity={undefined}
