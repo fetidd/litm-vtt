@@ -4,9 +4,10 @@ import type Modifier from "@/litm/modifier";
 import { RollRequest } from "@/messaging/message";
 import { useContext } from "react";
 import { UserContext } from "@/App";
+import type { WebSocketManager } from "@/websocket/WebSocketManager";
 
 type Props = {
-  websocket: WebSocket | null;
+  websocket: WebSocketManager | null;
   rollMessages: { id: string; text: string }[];
   modifiers: Modifier[];
   handleRemoveModifier: (modId: string) => void;
@@ -39,8 +40,7 @@ export default function RollWidget({
       }
     }
     const message = `${user?.username}${user?.role === "narrator" ? " (Narrator)" : ""} rolled: ${total} (${rolls.join(", ")})${modifierText.length ? " (" + modifierText.join(", ") + ")" : ""}`;
-    const rollMessage = new RollRequest(message);
-    websocket?.send(JSON.stringify(rollMessage));
+    websocket?.rollRequest(message);
     clearModifiers(); // clear modifiers after roll
   };
 

@@ -14,6 +14,7 @@ import {
   UpdateGameTableEntityDetails,
   UpdateGameTableEntityPosition,
 } from "@/messaging/message";
+import type { WebSocketManager } from "@/websocket/WebSocketManager";
 import {
   TransformComponent,
   useTransformContext,
@@ -33,7 +34,7 @@ import {
 import { UserContext } from "@/App";
 
 type GameTableProps = {
-  websocket: WebSocket | null;
+  websocket: WebSocketManager | null;
   gameTableEntities: EntityPositionData[];
   setGameTableEntities: StateSetter<EntityPositionData[]>;
   backgroundImage: string | null;
@@ -64,13 +65,11 @@ export function GameTable({
 
   // WEBSOCKET MESSAGING
   function sendEntityPosition(id: string, x: number, y: number) {
-    const message = new UpdateGameTableEntityPosition(id, x, y);
-    websocket!.send(JSON.stringify(message));
+    websocket!.updateGameTableEntityPosition(id, x, y);
   }
 
   function createNewGameTableEntity(entity: Entity, x: number, y: number) {
-    const message = new CreateNewGameTableEntity(entity.serialize(), x, y);
-    websocket!.send(JSON.stringify(message));
+    websocket!.createNewGameTableEntity(entity, x, y);
   }
 
   function calculateNewXPosition(
@@ -144,9 +143,7 @@ export function GameTable({
             { ...entityToUpdate, entity: updated },
           ];
         });
-        websocket.send(
-          JSON.stringify(new UpdateGameTableEntityDetails(updated.serialize())),
-        );
+        websocket.updateGameTableEntityDetails(updated);
       } else {
         removeEntityFromGameBoard(updated);
       }
@@ -159,9 +156,7 @@ export function GameTable({
     ]);
     if (websocket == undefined || websocket == null)
       throw Error("Editing without an open websocket!"); // TODO can this be a function that makes this check then returns the ws?
-    websocket.send(
-      JSON.stringify(new DeleteGameTableEntity(entity.id, entity.entityType)),
-    );
+    websocket.deleteGameTableEntity(entity.id, entity.entityType);
   }
 
   const createNewGameBoardTag = (where: { x: number; y: number }) => {

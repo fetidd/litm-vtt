@@ -3,6 +3,7 @@ import type LitmDatabase from "../database";
 import type { EntityPositionData } from "@/types";
 import type { Hero } from "@/litm/hero";
 import type { Challenge } from "@/litm/challenge";
+import { WebSocketServer } from "@/websocket/WebSocketManager";
 
 export function handleNewWebSocketConnection(
   ws: ServerWebSocket<{ authToken: string }>,
@@ -10,22 +11,11 @@ export function handleNewWebSocketConnection(
 ) {
   console.debug(`WebSocket connection opened: ${ws.remoteAddress}`);
   ["game-table", "rolls", "drawer"].forEach((x) => ws.subscribe(x));
+  
+  const wsServer = new WebSocketServer();
   const entitiesToSync: EntityPositionData[] = db.getAllEntitiesWithPositions();
-  const syncMessage = {
-    // TODO refactor out to DRY
-    type: "gameTableEntitySync",
-    entities: entitiesToSync.map((data) => {
-      return { ...data, entity: data.entity.serialize() };
-    }),
-  };
-  ws.send(JSON.stringify(syncMessage));
+  wsServer.gameTableEntitySync(ws, entitiesToSync);
 
   const drawerEntities: (Hero | Challenge)[] = db.getAllDrawerEntities();
-  const syncMessageDrawer = {
-    // TODO refactor out to DRY
-    type: "drawerEntitySync",
-    entities: drawerEntities.map((entity) => entity.serialize()),
-  };
-  const serialized = JSON.stringify(syncMessageDrawer);
-  ws.send(serialized);
+  wsServer.drawerEntitySync(ws, drawerEntities);
 }

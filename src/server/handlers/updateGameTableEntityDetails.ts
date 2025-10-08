@@ -5,6 +5,7 @@ import {
 import type LitmDatabase from "../database";
 import { deserializeRawEntity } from "@/litm/helpers";
 import type { EntityPositionData } from "@/types";
+import { WebSocketServer } from "@/websocket/WebSocketManager";
 
 export function handleUpdateGameTableEntityDetails(
   { entity }: UpdateGameTableEntityDetails,
@@ -13,13 +14,7 @@ export function handleUpdateGameTableEntityDetails(
 ) {
   const deserialized = deserializeRawEntity(entity);
   db.updateEntity(deserialized);
+  const wsServer = new WebSocketServer();
   const entitiesToSync: EntityPositionData[] = db.getAllEntitiesWithPositions();
-  const syncMessage = {
-    // TODO refactor out to DRY
-    type: "gameTableEntitySync",
-    entities: entitiesToSync.map((data) => {
-      return { ...data, entity: data.entity.serialize() };
-    }),
-  };
-  server.publish("game-table", JSON.stringify(syncMessage));
+  wsServer.gameTableEntitySync({ send: (msg: string) => server.publish("game-table", msg) }, entitiesToSync);
 }

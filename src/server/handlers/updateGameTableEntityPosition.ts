@@ -1,6 +1,7 @@
 import { UpdateGameTableEntityPosition } from "@/messaging/message";
 import { Database } from "bun:sqlite";
 import type LitmDatabase from "../database";
+import { WebSocketServer } from "@/websocket/WebSocketManager";
 
 export function handleUpdateGameTableEntityPosition(
   { id, x, y }: UpdateGameTableEntityPosition,
@@ -9,8 +10,6 @@ export function handleUpdateGameTableEntityPosition(
 ) {
   // Handle the updateGameTableEntityPosition message
   const entityData = db.updateEntityPosition(id, x, y);
-  server.publish(
-    "game-table",
-    JSON.stringify(new UpdateGameTableEntityPosition(id, x, y)),
-  );
+  const wsServer = new WebSocketServer();
+  wsServer.updateGameTableEntityPosition(server, id, x, y);
 }

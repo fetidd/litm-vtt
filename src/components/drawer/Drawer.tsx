@@ -4,11 +4,13 @@ import type { Entity, ModifierEntity } from "@/litm/entity";
 import { type Hero as LitmHero } from "@/litm/hero";
 import { useContext, useState } from "react";
 import HeroCard from "@/components/cards/HeroCard";
-import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
+import "../../../assets/scrollbar.css";
 import ThemeCard from "@/components/cards/HeroThemeCard";
 import { HeroTheme as LitmTheme } from "@/litm/theme";
 import { Tag } from "@/litm/tag";
 import FellowshipThemeCard from "@/components/cards/FellowshipThemeCard";
+import type { WebSocketManager } from "@/websocket/WebSocketManager";
+import ScrollContainer from "@/components/ui/ScrollContainer";
 
 export default function Drawer({
   websocket,
@@ -17,9 +19,9 @@ export default function Drawer({
   addModifier,
   onUpdateEntity,
   onCreateHero,
+  loading = false,
 }: DrawerProps) {
   const user = useContext(UserContext);
-  const transformContext = useTransformContext();
   const heroes = entities.filter((e) => e.entityType == "hero") as LitmHero[];
   const challenges = entities.filter((e) => e.entityType == "challenge");
   const myHero = heroes.find(h => h.owner === user?.username);
@@ -100,8 +102,26 @@ export default function Drawer({
         </div>
       )}
       <div style={{ flex: 1, overflow: "hidden" }}>
-        <TransformComponent wrapperStyle={{ height: "100%", width: "100%" }}>
-          <div style={{ padding: "8px", display: "flex", gap: "8px", alignItems: "flex-start" }}>
+        {loading ? (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center", 
+            height: "100%", 
+            color: "white" 
+          }}>
+            <div style={{ 
+              border: "3px solid #333", 
+              borderTop: "3px solid #68ff03ff", 
+              borderRadius: "50%", 
+              width: "40px", 
+              height: "40px", 
+              animation: "spin 1s linear infinite" 
+            }}></div>
+          </div>
+        ) : (
+          <ScrollContainer style={{ height: "100%" }}>
+            <div style={{ padding: "8px", display: "flex", gap: "8px", alignItems: "flex-start" }}>
             {activeTab === "challenges" ? (
               <div style={{ color: "white", padding: "20px" }}>
                 <h3>Challenges</h3>
@@ -167,15 +187,16 @@ export default function Drawer({
                 </button>
               </div>
             ) : null}
-          </div>
-        </TransformComponent>
+            </div>
+          </ScrollContainer>
+        )}
       </div>
     </div>
   );
 }
 
 interface DrawerProps {
-  websocket: WebSocket | null;
+  websocket: WebSocketManager | null;
   entities: Entity[];
   viewing: "hero" | "challenges";
   addModifier: (
@@ -185,4 +206,5 @@ interface DrawerProps {
   ) => void;
   onUpdateEntity?: (entity: Entity) => void;
   onCreateHero?: () => void;
+  loading?: boolean;
 }

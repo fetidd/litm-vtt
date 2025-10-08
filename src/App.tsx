@@ -1,4 +1,5 @@
 import "../assets/index.css";
+import "../assets/spinner.css";
 
 import { GameTable } from "./components/game_table/GameTable";
 import { Entity, ModifierEntity } from "./litm/entity";
@@ -16,6 +17,7 @@ import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import Drawer from "./components/drawer/Drawer";
 import { handleClientDrawerEntitySync } from "./handlers/clientDrawerEntitySync";
+import { WebSocketManager } from "./websocket/WebSocketManager";
 import ResizeHandle from "./components/ui/ResizeHandle";
 import CircularResizeHandle from "./components/ui/CircularResizeHandle";
 import WebsocketStatus from "./components/menu_bar/WebsocketStatus";
@@ -36,8 +38,6 @@ export const SessionContext: Context<string | null> = createContext(
   null as string | null,
 );
 
-
-
 export function App() {
   const [user, setUser] = useState<User | null>(() => {
     const saved = getCookie("userData");
@@ -52,18 +52,18 @@ export function App() {
     return saved ? JSON.parse(saved).session : null;
   });
 
-
   // STATE - this will probably need to become context provided soon, this feels like a lot...
   const [gameTableEntities, setGameTableEntities] = useState<
     EntityPositionData[]
   >([]);
   const [drawerEntities, setDrawerEntities] = useState<Entity[]>([]);
+  const [drawerLoaded, setDrawerLoaded] = useState(false);
   const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>([]);
   const [rollMessages, setRollMessages] = useState<
     { id: string; text: string }[]
   >([]);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [wsManager, setWsManager] = useState<WebSocketManager | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
   const [showCreateHeroModal, setShowCreateHeroModal] = useState(false);
@@ -79,77 +79,60 @@ export function App() {
   // WEBSOCKET HANDLING - only when user is logged in
   useEffect(() => {
     if (!user || !session) {
-      setWs(null);
+      setWsManager(null);
       setWsConnected(false);
+      setDrawerLoaded(false);
       return;
     }
 
-    // const webSocket = new WebSocket("https://litm-vtt.fly.dev/");
-    const webSocket = new WebSocket("ws://localhost:3000/");
-    setWs(webSocket);
+    const manager = new WebSocketManager({
+      url: "ws://localhost:3000/",
+      onOpen: () => {
+        setWsConnected(true);
+        manager.joinSession(session, user);
+      },
+      onClose: () => setWsConnected(false),
+      onError: () => setWsConnected(false),
+    });
 
-    webSocket.onopen = () => {
-      setWsConnected(true);
-      // Send session join message when connected
-      webSocket.send(
-        JSON.stringify({ type: "joinSession", sessionId: session, user }),
-      );
-    };
-    webSocket.onclose = () => setWsConnected(false);
-    webSocket.onerror = () => setWsConnected(false);
-    webSocket.onmessage = function (event) {
-      const message = JSON.parse(event.data);
-      switch (message.type) {
-        case "updateGameTableEntityPosition": {
-          handleUpdateClientGameTableEntityPosition(
-            message,
-            setGameTableEntities,
-          );
-          break;
-        }
-        case "updateGameTableEntityDetails": {
-          handleUpdateClientGameTableEntityDetails(
-            message,
-            setGameTableEntities,
-          );
-          break;
-        }
-        case "gameTableEntitySync": {
-          handleClientGameTableEntitySync(message, setGameTableEntities);
-          break;
-        }
-        case "drawerEntitySync": {
-          handleClientDrawerEntitySync(message, setDrawerEntities);
-          // Check if player needs to create a hero
-          if (user?.role === "player") {
-            const hasHero = message.entities.some((entity: any) => 
-              entity.entityType === "hero" && entity.owner === user.username
-            );
-            if (!hasHero) {
-              setShowCreateHeroModal(true);
-            }
-          }
-          break;
-        }
-        case "rollResponse": {
-          handleRollResponse(message, setRollMessages);
-          break;
-        }
-        case "backgroundImage": {
-          setBackgroundImage(message.imageUrl);
-          break;
-        }
-        case "connectedUsers": {
-          setConnectedUsers(message.users);
-          break;
-        }
-        default: {
-          console.warn(`Unknown message type: ${message.type}`);
+    // Register message handlers
+    manager.onMessage("updateGameTableEntityPosition", (message) => {
+      handleUpdateClientGameTableEntityPosition(message, setGameTableEntities);
+    });
+    manager.onMessage("updateGameTableEntityDetails", (message) => {
+      handleUpdateClientGameTableEntityDetails(message, setGameTableEntities);
+    });
+    manager.onMessage("gameTableEntitySync", (message) => {
+      handleClientGameTableEntitySync(message, setGameTableEntities);
+    });
+    manager.onMessage("drawerEntitySync", (message) => {
+      handleClientDrawerEntitySync(message, setDrawerEntities);
+      setDrawerLoaded(true);
+      if (user?.role === "player") {
+        const hasHero = message.entities.some(
+          (entity: any) =>
+            entity.entityType === "hero" && entity.owner === user.username,
+        );
+        if (!hasHero) {
+          setShowCreateHeroModal(true);
         }
       }
-    };
+    });
+    manager.onMessage("rollResponse", (message) => {
+      handleRollResponse(message, setRollMessages);
+    });
+    manager.onMessage("backgroundImage", (message) => {
+      setBackgroundImage(message.imageUrl);
+    });
+    manager.onMessage("connectedUsers", (message) => {
+      setConnectedUsers(message.users);
+    });
+
+    manager.connect().catch(console.error);
+    setWsManager(manager);
+
     return () => {
-      webSocket.close();
+      manager.disconnect();
     };
   }, [session, user]);
 
@@ -277,12 +260,8 @@ export function App() {
       ),
     );
     // Send update to server if websocket is available
-    if (ws) {
-      ws.send(JSON.stringify({
-        type: "updateDrawerEntity",
-        entity: updatedEntity.serialize(),
-        sessionId: session
-      }));
+    if (wsManager) {
+      wsManager.updateDrawerEntity(updatedEntity, session!);
     }
   }
 
@@ -290,22 +269,15 @@ export function App() {
     setDrawerEntities((prev) => [...prev, hero]);
     setShowCreateHeroModal(false);
     // Send new hero to server
-    if (ws) {
-      ws.send(JSON.stringify({
-        type: "createDrawerEntity",
-        entity: hero.serialize(),
-        sessionId: session
-      }));
+    if (wsManager) {
+      wsManager.createDrawerEntity(hero, session!);
     }
   }
 
   const handleLogin = (user: User, sessionCode: string) => {
     setUser(user);
     setSession(sessionCode);
-    setCookie(
-      "userData",
-      JSON.stringify({ ...user, session: sessionCode }),
-    );
+    setCookie("userData", JSON.stringify({ ...user, session: sessionCode }));
   };
 
   const handleLogout = () => {
@@ -339,7 +311,10 @@ export function App() {
                 style={{ display: "flex", alignItems: "center", gap: "16px" }}
               >
                 {wsConnected && <ConnectedUsersList users={connectedUsers} />}
-                <WebsocketStatus connected={wsConnected} sessionCode={session} />
+                <WebsocketStatus
+                  connected={wsConnected}
+                  sessionCode={session}
+                />
                 <Button onClick={handleLogout} variant="header">
                   Logout
                 </Button>
@@ -365,7 +340,7 @@ export function App() {
                 disablePadding={true}
               >
                 <GameTable
-                  websocket={ws}
+                  websocket={wsManager}
                   gameTableEntities={gameTableEntities}
                   setGameTableEntities={setGameTableEntities}
                   backgroundImage={backgroundImage}
@@ -391,31 +366,25 @@ export function App() {
             <div
               style={{ gridArea: "drawer", overflow: "hidden", height: "100%" }}
             >
-              <TransformWrapper
-                panning={{
-                  excluded: ["draggable-entity"],
-                  allowLeftClickPan: false,
-                  allowRightClickPan: false,
-                  velocityDisabled: true,
-                }}
-                minScale={1}
-                maxScale={1}
-                centerZoomedOut={true}
-                disablePadding={true}
-              >
-                <Drawer
-                  websocket={ws}
-                  entities={user?.role === "narrator" ? drawerEntities : drawerEntities.filter(entity => entity.owner === user?.username)}
-                  viewing={"hero"}
-                  addModifier={addModifier}
-                  onUpdateEntity={handleUpdateEntity}
-                  onCreateHero={() => setShowCreateHeroModal(true)}
-                />
-              </TransformWrapper>
+              <Drawer
+                websocket={wsManager}
+                entities={
+                  user?.role === "narrator"
+                    ? drawerEntities
+                    : drawerEntities.filter(
+                        (entity) => entity.owner === user?.username,
+                      )
+                }
+                viewing={"hero"}
+                addModifier={addModifier}
+                onUpdateEntity={handleUpdateEntity}
+                onCreateHero={() => setShowCreateHeroModal(true)}
+                loading={!drawerLoaded}
+              />
             </div>
             <div style={{ gridArea: "roll-widget" }}>
               <RollWidget
-                websocket={ws}
+                websocket={wsManager}
                 rollMessages={rollMessages}
                 modifiers={selectedModifiers}
                 handleRemoveModifier={(id: string) =>
@@ -432,7 +401,7 @@ export function App() {
         <Menu id={MENU_ID}>
           <Item disabled>Top level</Item>
         </Menu>
-        
+
         <Modal
           isOpen={showCreateHeroModal}
           onClose={() => setShowCreateHeroModal(false)}
