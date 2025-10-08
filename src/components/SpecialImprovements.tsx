@@ -27,16 +27,11 @@ export default function SpecialImprovements({
         {specialImprovements.map((imp: string, n: number) => {
           const [name, description] = imp.split(": ");
           return (
-            <span key={n} style={{ padding: "4px" }}>
+            <span key={n} style={{ padding: "4px" }} title={description}>
               {name}
             </span>
           );
         })}
-        {editing && (
-          <Button onClick={() => onUpdate([...specialImprovements, ""])}>
-            + Add Improvement
-          </Button>
-        )}
       </div>
     </>
   );
