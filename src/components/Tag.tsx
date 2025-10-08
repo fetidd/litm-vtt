@@ -80,7 +80,7 @@ export default function Tag({
     );
   }
   const user = useContext(UserContext);
-  const isMine = user?.username == tag.owner;
+  const isMine = user?.username == tag.owner || user?.role == "narrator";
 
   return (
     <>

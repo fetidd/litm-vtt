@@ -88,7 +88,7 @@ export default function Status({
   }
 
   const user = useContext(UserContext);
-  const isMine = user?.username == status.owner;
+  const isMine = user?.username == status.owner || user?.role == "narrator";
 
   return (
     <>

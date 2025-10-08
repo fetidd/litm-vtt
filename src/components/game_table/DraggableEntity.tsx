@@ -76,7 +76,7 @@ export function DraggableEntity({
   );
 
   const user = useContext(UserContext);
-  const isMine = user?.username == entity.owner;
+  const isMine = user?.username == entity.owner || user?.role == "narrator";
 
   const style: React.CSSProperties = {
     boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.47)",

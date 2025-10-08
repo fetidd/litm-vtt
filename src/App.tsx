@@ -5,7 +5,7 @@ import { Entity, ModifierEntity } from "./litm/entity";
 import { createContext, useEffect, useState, type Context } from "react";
 import RollWidget from "./components/roll_widget/RollWidget";
 import type Modifier from "./litm/modifier";
-import type User from "./user";
+import User from "./user";
 import { TransformWrapper } from "react-zoom-pan-pinch";
 import type { EntityPositionData } from "./types";
 import { handleRollResponse } from "./handlers/rollResponse";
@@ -23,6 +23,10 @@ import ConnectedUsersList from "./components/menu_bar/ConnectedUsersList";
 import WelcomeMessage from "./components/menu_bar/WelcomeMessage";
 import Button from "./components/Button";
 import LoginScreen from "./components/LoginScreen";
+import Modal from "./components/Modal";
+import CreateHeroForm from "./components/CreateHeroForm";
+import { Hero as LitmHero } from "./litm/hero";
+import { deleteCookie, getCookie, setCookie } from "./cookie";
 
 export const UserContext: Context<User | null> = createContext(
   null as User | null,
@@ -32,32 +36,14 @@ export const SessionContext: Context<string | null> = createContext(
   null as string | null,
 );
 
-// Cookie utilities
-const setCookie = (name: string, value: string, days: number = 30) => {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-};
 
-const getCookie = (name: string): string | null => {
-  return document.cookie.split("; ").reduce(
-    (r, v) => {
-      const parts = v.split("=");
-      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
-    },
-    null as string | null,
-  );
-};
-
-const deleteCookie = (name: string) => {
-  setCookie(name, "", -1);
-};
 
 export function App() {
   const [user, setUser] = useState<User | null>(() => {
     const saved = getCookie("userData");
     if (saved) {
       const data = JSON.parse(saved);
-      return { username: data.username, role: data.role };
+      return User.deserialize({ username: data.username, role: data.role });
     }
     return null;
   });
@@ -80,6 +66,7 @@ export function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
+  const [showCreateHeroModal, setShowCreateHeroModal] = useState(false);
   const [drawerHeight, setDrawerHeight] = useState(() => {
     const saved = localStorage.getItem("drawerHeight");
     return saved ? parseInt(saved) : 200;
@@ -133,6 +120,15 @@ export function App() {
         }
         case "drawerEntitySync": {
           handleClientDrawerEntitySync(message, setDrawerEntities);
+          // Check if player needs to create a hero
+          if (user?.role === "player") {
+            const hasHero = message.entities.some((entity: any) => 
+              entity.entityType === "hero" && entity.owner === user.username
+            );
+            if (!hasHero) {
+              setShowCreateHeroModal(true);
+            }
+          }
           break;
         }
         case "rollResponse": {
@@ -274,6 +270,35 @@ export function App() {
     );
   }
 
+  function handleUpdateEntity(updatedEntity: Entity) {
+    setDrawerEntities((prev) =>
+      prev.map((entity) =>
+        entity.id === updatedEntity.id ? updatedEntity : entity,
+      ),
+    );
+    // Send update to server if websocket is available
+    if (ws) {
+      ws.send(JSON.stringify({
+        type: "updateDrawerEntity",
+        entity: updatedEntity.serialize(),
+        sessionId: session
+      }));
+    }
+  }
+
+  function handleCreateHero(hero: LitmHero) {
+    setDrawerEntities((prev) => [...prev, hero]);
+    setShowCreateHeroModal(false);
+    // Send new hero to server
+    if (ws) {
+      ws.send(JSON.stringify({
+        type: "createDrawerEntity",
+        entity: hero.serialize(),
+        sessionId: session
+      }));
+    }
+  }
+
   const handleLogin = (user: User, sessionCode: string) => {
     setUser(user);
     setSession(sessionCode);
@@ -380,13 +405,11 @@ export function App() {
               >
                 <Drawer
                   websocket={ws}
-                  entities={drawerEntities.filter(
-                    (entity) =>
-                      user?.role === "narrator" ||
-                      entity.owner === user?.username,
-                  )}
+                  entities={user?.role === "narrator" ? drawerEntities : drawerEntities.filter(entity => entity.owner === user?.username)}
                   viewing={"hero"}
                   addModifier={addModifier}
+                  onUpdateEntity={handleUpdateEntity}
+                  onCreateHero={() => setShowCreateHeroModal(true)}
                 />
               </TransformWrapper>
             </div>
@@ -409,6 +432,18 @@ export function App() {
         <Menu id={MENU_ID}>
           <Item disabled>Top level</Item>
         </Menu>
+        
+        <Modal
+          isOpen={showCreateHeroModal}
+          onClose={() => setShowCreateHeroModal(false)}
+          title="Create Your Hero"
+        >
+          <CreateHeroForm
+            onCreateHero={handleCreateHero}
+            onCancel={() => setShowCreateHeroModal(false)}
+            username={user.username}
+          />
+        </Modal>
       </div>
     );
   }
