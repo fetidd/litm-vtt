@@ -16,8 +16,6 @@ import { UserContext } from "@/App";
 
 export default function Status({
   status,
-  editing,
-  setEditing,
   updateEntity,
   addModifier,
   removeEntity,
@@ -40,14 +38,6 @@ export default function Status({
     alignContent: "center",
     fontStyle: "italic",
   };
-
-  function performUpdate() {
-    setEditing(undefined);
-    updateEntity(status.id, (status) => {
-      status.name = statusText;
-      return status;
-    });
-  }
 
   const MENU_ID = `status-menu-${status.id}`;
   const { show } = useContextMenu({ id: MENU_ID });
@@ -113,8 +103,6 @@ export default function Status({
 
 export type Props = {
   status: LitmStatus;
-  editing: boolean;
-  setEditing: (id: string | undefined) => void;
   updateEntity: (id: string, updater: (ent: Entity) => Entity) => void;
   addModifier: any;
   removeEntity: any;

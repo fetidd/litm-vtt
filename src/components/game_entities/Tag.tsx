@@ -1,4 +1,4 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useRef } from "react";
 import constant, { iconStyle } from "@/constants";
 import { Tag as LitmTag } from "@/litm/tag";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
@@ -13,23 +13,16 @@ import {
 } from "@heroicons/react/24/solid";
 import type { Entity } from "@/litm/entity";
 import { UserContext } from "@/App";
-import TagInput from "@/components/hero_components/TagInput";
-import TagEditDialog from "@/components/ui/TagEditDialog";
 
 export default function Tag({
   tag,
-  editing,
-  setEditing,
   updateEntity,
   removeEntity,
   addModifier,
   isWeakness = false,
   isTheme = false,
-  onCard = false,
   onShowEditDialog
 }: TagProps) {
-  const [tagText, setTagText] = useState(tag.name);
-
   const tagRef = useRef<HTMLDivElement>(null);
 
   const style: React.CSSProperties = {
@@ -50,14 +43,6 @@ export default function Tag({
     fontStyle: "italic",
   };
   let tagObj = <span style={{ textAlign: "center", whiteSpace: "nowrap" }}>{tag.name}</span>;
-
-  function performUpdate() {
-    setEditing(undefined);
-    updateEntity(tag.id, (tag) => {
-      tag.name = tagText;
-      return tag;
-    });
-  }
 
   const MENU_ID = `tag-menu-${tag.id}`;
   const { show } = useContextMenu({ id: MENU_ID });
@@ -139,8 +124,6 @@ export default function Tag({
 
 export type TagProps = {
   tag: LitmTag;
-  editing: boolean;
-  setEditing: (id: string | undefined) => void;
   updateEntity: (id: string, updater: (ent: Entity) => Entity) => void;
   removeEntity: any;
   addModifier: any;
