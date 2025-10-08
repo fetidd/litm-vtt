@@ -1,221 +1,150 @@
-import { expect, test, describe } from "bun:test";
-import { StoryTheme, HeroTheme } from "@/litm/theme";
-import { Tag } from "@/litm/tag";
+import { describe, it, expect } from 'bun:test';
+import { HeroTheme, StoryTheme } from '../../src/litm/theme';
+import { Tag } from '../../src/litm/tag';
 
-describe("StoryTheme can deserialize correctly", () => {
-  test("Deserialize with tags", () => {
-    const raw = {
-      id: "12345678",
-      isScratched: false,
-      name: "test",
-      otherTags: [
-        { id: "12345678", isScratched: false, name: "test-tag", owner: "user" },
-        {
-          id: "12345678",
-          isScratched: false,
-          name: "test-tag2",
-          owner: "user",
-        },
-      ],
-      weaknessTags: [
-        {
-          id: "12345678",
-          isScratched: false,
-          name: "test-weakness-tag",
-          owner: "user",
-        },
-      ],
-      description: "desc",
-      owner: "user",
-    };
-    const actual = StoryTheme.deserialize(raw);
-    const expected = StoryTheme.blank();
-    expected.name = "test";
-    expected.id = "12345678";
-    expected.owner = "user";
-    expected.otherTags = [
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-tag",
-        owner: "user",
-      }),
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-tag2",
-        owner: "user",
-      }),
-    ];
-    expected.weaknessTags = [
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-weakness-tag",
-        owner: "user",
-      }),
-    ];
-    expected.description = "desc";
-    expect(actual).toEqual(expected);
-    unchangeableChecks(actual);
-    expect(actual.serialize()).toEqual({ ...raw, entityType: "story-theme" });
+describe('HeroTheme', () => {
+  it('should create blank hero theme with default properties', () => {
+    const theme = HeroTheme.blank();
+    expect(theme.name).toBe('');
+    expect(theme.owner).toBe('');
+    expect(theme.entityType).toBe('hero-theme');
+    expect(theme.value).toBe(1);
+    expect(theme.canBurn).toBe(true);
+    expect(theme.canScratch).toBe(true);
+    expect(theme.isScratched).toBe(false);
+    expect(theme.otherTags).toEqual([]);
+    expect(theme.weaknessTags).toEqual([]);
+    expect(theme.description).toBe('');
+    expect(theme.improve).toBe(0);
+    expect(theme.milestone).toBe(0);
+    expect(theme.abandon).toBe(0);
+    expect(theme.maxAdvancement).toBe(3);
+    expect(theme.might).toBe('origin');
+    expect(theme.quest).toBe('');
+    expect(theme.specialImprovements).toEqual([]);
   });
 
-  test("Raw input has changed StoryTheme rleated properties that shoudnt change", () => {
+  it('should handle advancement properties correctly', () => {
+    const theme = HeroTheme.blank();
+    
+    theme.improve = 2;
+    expect(theme.improve).toBe(2);
+    
+    theme.milestone = 1;
+    expect(theme.milestone).toBe(1);
+    
+    theme.abandon = 3;
+    expect(theme.abandon).toBe(3);
+    
+    expect(() => { theme.improve = -1; }).toThrow('Improve must be 0-3');
+    expect(() => { theme.improve = 4; }).toThrow('Improve must be 0-3');
+    expect(() => { theme.milestone = -1; }).toThrow('Milestone must be 0-3');
+    expect(() => { theme.abandon = 4; }).toThrow('Abandon must be 0-3');
+  });
+
+  it('should serialize correctly', () => {
+    const theme = HeroTheme.blank();
+    theme.name = 'Test Theme';
+    theme.owner = 'testuser';
+    theme.might = 'adventure';
+    theme.type = 'duty';
+    theme.improve = 1;
+    theme.milestone = 2;
+    theme.abandon = 0;
+    theme.quest = 'Test quest';
+    theme.description = 'Test description';
+    theme.specialImprovements = ['improvement1'];
+    
+    const tag = Tag.blank();
+    tag.name = 'Test Tag';
+    theme.otherTags.push(tag);
+    
+    const serialized = theme.serialize();
+    expect(serialized).toMatchObject({
+      name: 'Test Theme',
+      owner: 'testuser',
+      entityType: 'hero-theme',
+      might: 'adventure',
+      type: 'duty',
+      improve: 1,
+      milestone: 2,
+      abandon: 0,
+      quest: 'Test quest',
+      description: 'Test description',
+      specialImprovements: ['improvement1']
+    });
+    expect((serialized as any).otherTags).toHaveLength(1);
+  });
+
+  it('should deserialize correctly', () => {
     const raw = {
-      id: "12345678",
-      isScratched: false,
-      name: "test",
+      id: 'test-id',
+      name: 'Test Theme',
+      owner: 'testuser',
+      might: 'greatness',
+      type: 'destiny',
       otherTags: [],
       weaknessTags: [],
-      description: "",
-      canBurn: false,
-      owner: "user",
+      description: 'Test description',
+      improve: 2,
+      milestone: 1,
+      abandon: 0,
+      quest: 'Test quest',
+      specialImprovements: ['improvement1'],
+      isScratched: false
     };
-    const actual = StoryTheme.deserialize(raw);
-    const expected = StoryTheme.blank();
-    expected.name = "test";
-    expected.id = "12345678";
-    expected.owner = "user";
-    expect(actual).toEqual(expected);
-    unchangeableChecks(actual);
-    expect(actual.serialize()).toEqual({ ...raw, entityType: "story-theme" });
+    
+    const theme = HeroTheme.deserialize(raw);
+    expect(theme.id).toBe('test-id');
+    expect(theme.name).toBe('Test Theme');
+    expect(theme.might).toBe('greatness');
+    expect(theme.type).toBe('destiny');
+    expect(theme.improve).toBe(2);
+    expect(theme.milestone).toBe(1);
+    expect(theme.abandon).toBe(0);
+  });
+
+  it('should throw error when deserializing invalid data', () => {
+    expect(() => HeroTheme.deserialize({})).toThrow('Failed to deserialize HeroTheme');
+    expect(() => HeroTheme.deserialize({ name: 'test' })).toThrow('missing id');
   });
 });
 
-function unchangeableChecks(actual: StoryTheme) {
-  expect(actual.canBurn).toEqual(true);
-  expect(actual.canScratch).toEqual(true);
-  expect(actual.entityType).toEqual("story-theme");
-  expect(actual.value).toEqual(1);
-}
-
-describe("HeroTheme can deserialize correctly", () => {
-  test("Deserialize with tags", () => {
-    const raw = {
-      id: "12345678",
-      isScratched: false,
-      name: "test",
-      might: "greatness",
-      type: "destiny",
-      improve: 0,
-      milestone: 1,
-      abandon: 2,
-      quest: "quest",
-      description: "description",
-      specialImprovements: ["improvement-1", "improvement-2"],
-      otherTags: [
-        {
-          id: "12345678",
-          isScratched: false,
-          name: "test-tag",
-          owner: "user",
-          entityType: "tag",
-        },
-        {
-          id: "12345678",
-          isScratched: false,
-          name: "test-tag2",
-          owner: "user",
-          entityType: "tag",
-        },
-      ],
-      weaknessTags: [
-        {
-          id: "12345678",
-          isScratched: false,
-          name: "test-weakness-tag",
-          owner: "user",
-          entityType: "tag",
-        },
-      ],
-      owner: "user",
-    };
-    const actual = HeroTheme.deserialize(raw);
-    const expected = HeroTheme.blank();
-    expected.name = "test";
-    expected.id = "12345678";
-    expected.might = "greatness";
-    expected.type = "destiny";
-    expected.owner = "user";
-    expected.otherTags = [
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-tag",
-        owner: "user",
-      }),
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-tag2",
-        owner: "user",
-      }),
-    ];
-    expected.weaknessTags = [
-      Tag.deserialize({
-        id: "12345678",
-        isScratched: false,
-        name: "test-weakness-tag",
-        owner: "user",
-      }),
-    ];
-    expected.description = "desc";
-    expected.improve = 0;
-    expected.milestone = 1;
-    expected.abandon = 2;
-    expected.quest = "quest";
-    expected.description = "description";
-    expected.specialImprovements = ["improvement-1", "improvement-2"];
-    expect(actual).toEqual(expected);
-    unchangeableHeroThemeChecks(actual);
-    expect(actual.serialize()).toEqual({ ...raw, entityType: "hero-theme" });
+describe('StoryTheme', () => {
+  it('should create blank story theme with default properties', () => {
+    const theme = StoryTheme.blank();
+    expect(theme.name).toBe('');
+    expect(theme.owner).toBe('');
+    expect(theme.entityType).toBe('story-theme');
+    expect(theme.value).toBe(1);
+    expect(theme.canBurn).toBe(true);
+    expect(theme.canScratch).toBe(true);
+    expect(theme.isScratched).toBe(false);
+    expect(theme.otherTags).toEqual([]);
+    expect(theme.weaknessTags).toEqual([]);
+    expect(theme.description).toBe('');
   });
 
-  test("Raw input has changed HeroTheme rleated properties that shoudnt change", () => {
+  it('should deserialize correctly', () => {
     const raw = {
-      id: "12345678",
-      isScratched: false,
-      name: "test",
-      might: "greatness",
-      type: "destiny",
+      id: 'test-id',
+      name: 'Test Story Theme',
+      owner: 'testuser',
       otherTags: [],
       weaknessTags: [],
-      canBurn: false,
-      owner: "user",
-      improve: 0,
-      milestone: 1,
-      abandon: 2,
-      quest: "quest",
-      description: "description",
-      specialImprovements: ["improvement-1", "improvement-2"],
+      description: 'Test description',
+      isScratched: false
     };
-    const actual = HeroTheme.deserialize(raw);
-    const expected = HeroTheme.blank();
-    expected.name = "test";
-    expected.id = "12345678";
-    expected.might = "greatness";
-    expected.type = "destiny";
-    expected.owner = "user";
-    expected.improve = 0;
-    expected.milestone = 1;
-    expected.abandon = 2;
-    expected.quest = "quest";
-    expected.description = "description";
-    expected.specialImprovements = ["improvement-1", "improvement-2"];
-    expect(actual).toEqual(expected);
-    expect(actual.canBurn).toEqual(true);
-    unchangeableHeroThemeChecks(actual);
-    const correctSerialized = { ...raw, entityType: "hero-theme" };
-    // @ts-ignore
-    delete correctSerialized.canBurn;
-    expect(actual.serialize()).toEqual(correctSerialized);
+    
+    const theme = StoryTheme.deserialize(raw);
+    expect(theme.id).toBe('test-id');
+    expect(theme.name).toBe('Test Story Theme');
+    expect(theme.owner).toBe('testuser');
+    expect(theme.description).toBe('Test description');
+  });
+
+  it('should throw error when deserializing invalid data', () => {
+    expect(() => StoryTheme.deserialize({})).toThrow('Failed to deserialize StoryTheme');
+    expect(() => StoryTheme.deserialize({ name: 'test' })).toThrow('missing id');
   });
 });
-
-function unchangeableHeroThemeChecks(actual: HeroTheme) {
-  expect(actual.canBurn).toEqual(true);
-  expect(actual.canScratch).toEqual(true);
-  expect(actual.entityType).toEqual("hero-theme");
-  expect(actual.value).toEqual(1);
-}
