@@ -29,10 +29,11 @@ export const UserContext: Context<User | null> = createContext(
 );
 
 export function App() {
-  const [user, setUser] = useState<User>({
-    username: "ben",
-    role: "narrator",
-  } as User);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [username, setUsername] = useState('');
 
   // STATE - this will probably need to become context provided soon, this feels like a lot...
   const [gameTableEntities, setGameTableEntities] = useState<
@@ -105,8 +106,9 @@ export function App() {
   const style: React.CSSProperties = {
     display: "grid",
     gridTemplateColumns: `1fr 8px ${rollWidgetWidth}px`,
-    gridTemplateRows: `1fr 8px ${drawerHeight}px`,
+    gridTemplateRows: `40px 1fr 8px ${drawerHeight}px`,
     gridTemplateAreas: `
+      "menu-bar menu-bar menu-bar"
       "game-table width-resize-handle roll-widget"
       "resize-handle width-resize-handle roll-widget"
       "drawer width-resize-handle roll-widget"
@@ -212,10 +214,29 @@ export function App() {
     );
   }
 
+  const handleLogin = () => {
+    if (username.trim()) {
+      const newUser = { username: username.trim(), role: "narrator" } as User;
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
   if (user) {
     return (
       <div className="app" style={{...style, position: "relative"}} onContextMenu={displayContextMenu}>
         <UserContext value={user}>
+          <div style={{ gridArea: "menu-bar", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 8px", background: "#333", color: "white" }}>
+            <span>Welcome, {user.username}</span>
+            <button onClick={handleLogout} style={{ padding: "4px 8px", fontSize: "14px" }}>
+              Logout
+            </button>
+          </div>
           <div style={{ gridArea: "game-table", overflow: "hidden", height: "100%" }}>
             <TransformWrapper
               panning={{
@@ -294,7 +315,24 @@ export function App() {
         </Menu>
       </div>
     );
-  } else return <div>LOGIN</div>;
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: "16px" }}>
+      <h1>Login</h1>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+        style={{ padding: "8px", fontSize: "16px", minWidth: "200px" }}
+      />
+      <button onClick={handleLogin} style={{ padding: "8px 16px", fontSize: "16px" }}>
+        Login
+      </button>
+    </div>
+  );
 }
 
 export default App;
