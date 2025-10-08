@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useRef } from "react";
 import constant, { iconStyle } from "@/constants";
 import { Tag as LitmTag } from "@/litm/tag";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
@@ -14,6 +14,7 @@ import {
 import type { Entity } from "@/litm/entity";
 import { UserContext } from "@/App";
 import TagInput from "@/components/hero_components/TagInput";
+import TagEditDialog from "@/components/ui/TagEditDialog";
 
 export default function Tag({
   tag,
@@ -24,9 +25,12 @@ export default function Tag({
   addModifier,
   isWeakness = false,
   isTheme = false,
-  onCard = false
+  onCard = false,
+  onShowEditDialog
 }: TagProps) {
   const [tagText, setTagText] = useState(tag.name);
+
+  const tagRef = useRef<HTMLDivElement>(null);
 
   const style: React.CSSProperties = {
     display: "flex",
@@ -68,23 +72,19 @@ export default function Tag({
     });
   }
 
-  if (editing) {
-    tagObj = (
-      <TagInput
-        value={tagText}
-        onChange={setTagText}
-        onSubmit={performUpdate}
-        placeholder="tag name"
-        autoFocus
-      />
-    );
-  }
+  const handleEditClick = () => {
+    if (tagRef.current && onShowEditDialog) {
+      const rect = tagRef.current.getBoundingClientRect();
+      onShowEditDialog({ x: rect.right + 8, y: rect.top });
+    }
+  };
+
   const user = useContext(UserContext);
   const isMine = user?.username == tag.owner || user?.role == "narrator";
 
   return (
     <>
-      <div style={style} onContextMenu={displayContextMenu}>
+      <div ref={tagRef} style={style} onContextMenu={displayContextMenu}>
         {tagObj}
       </div>
       {createPortal(
@@ -122,7 +122,7 @@ export default function Tag({
           )}
           {isMine && (
             <>
-              <Item onClick={() => setEditing(tag.id)}>
+              <Item onClick={handleEditClick}>
                 {<PencilIcon style={iconStyle} />}Edit
               </Item>
               <Item onClick={() => removeEntity(tag)}>
@@ -146,5 +146,6 @@ export type TagProps = {
   addModifier: any;
   isWeakness?: boolean;
   isTheme?: boolean;
-  onCard?: boolean
+  onCard?: boolean;
+  onShowEditDialog?: (position: { x: number; y: number }) => void;
 };

@@ -1,5 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import TagEditDialog from "@/components/ui/TagEditDialog";
+import StatusEditDialog from "@/components/ui/StatusEditDialog";
 import { Entity, ModifierEntity } from "@/litm/entity";
 import { Tag as LitmTag } from "@/litm/tag";
 import { Status as LitmStatus } from "@/litm/status";
@@ -57,8 +59,11 @@ export function DraggableEntity({
 }: DraggableEntityProps) {
   const { entity, position } = ept;
   const { x, y } = position;
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editDialogPosition, setEditDialogPosition] = useState({ x: 0, y: 0 });
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id,
+    disabled: showEditDialog,
   });
   const transformContext = useTransformContext();
   const xOffset =
@@ -123,6 +128,10 @@ export function DraggableEntity({
             updateEntity={updateEntity}
             addModifier={addModifier}
             removeEntity={removeEntity}
+            onShowEditDialog={(position) => {
+              setEditDialogPosition(position);
+              setShowEditDialog(true);
+            }}
           />
         )}
         {entity.entityType == "status" && (
@@ -133,6 +142,10 @@ export function DraggableEntity({
             updateEntity={updateEntity}
             addModifier={addModifier}
             removeEntity={removeEntity}
+            onShowEditDialog={(position) => {
+              setEditDialogPosition(position);
+              setShowEditDialog(true);
+            }}
           />
         )}
         {entity.entityType == "story-theme" && (
@@ -146,6 +159,39 @@ export function DraggableEntity({
           />
         )}
       </div>
+      {showEditDialog && entity.entityType === "tag" && createPortal(
+        <TagEditDialog
+          tag={entity as LitmTag}
+          position={editDialogPosition}
+          onSave={(name, isPublic) => {
+            updateEntity(entity.id, (tag) => {
+              tag.name = name;
+              return tag;
+            });
+            setShowEditDialog(false);
+          }}
+          onCancel={() => setShowEditDialog(false)}
+          isOwner={user?.username === entity.owner || user?.role === "narrator"}
+        />,
+        document.body,
+      )}
+      {showEditDialog && entity.entityType === "status" && createPortal(
+        <StatusEditDialog
+          status={entity as LitmStatus}
+          position={editDialogPosition}
+          onSave={(name, tiers, isPublic) => {
+            updateEntity(entity.id, (status) => {
+              status.name = name;
+              (status as LitmStatus).tiers = tiers;
+              return status;
+            });
+            setShowEditDialog(false);
+          }}
+          onCancel={() => setShowEditDialog(false)}
+          isOwner={user?.username === entity.owner || user?.role === "narrator"}
+        />,
+        document.body,
+      )}
     </>
   );
 }

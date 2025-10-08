@@ -21,7 +21,9 @@ export default function Status({
   updateEntity,
   addModifier,
   removeEntity,
+  onShowEditDialog,
 }: Props) {
+  const statusRef = useRef<HTMLDivElement>(null);
   const [statusText, setStatusText] = useState(status.name);
 
   let style: React.CSSProperties = {
@@ -65,34 +67,13 @@ export default function Status({
       {status.name.toLowerCase()}-{status.value}
     </span>
   );
-  if (editing) {
-    text = (
-      <input
-        style={{
-          background: "transparent",
-          textAlign: "center",
-          border: "none",
-          color: "black",
-          width: "fit",
-        }}
-        autoFocus
-        onChange={(e) => setStatusText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key == "Enter") {
-            performUpdate();
-          }
-        }}
-        value={statusText}
-      />
-    );
-  }
 
   const user = useContext(UserContext);
   const isMine = user?.username == status.owner || user?.role == "narrator";
 
   return (
     <>
-      <div style={style} onContextMenu={displayContextMenu}>
+      <div ref={statusRef} style={style} onContextMenu={displayContextMenu}>
         {text}
       </div>
       {createPortal(
@@ -107,47 +88,15 @@ export default function Status({
           </Item>
           {isMine && (
             <>
-              <Item
-                closeOnClick={false}
-                onClick={() => {
-                  updateEntity(status.id, (e) => {
-                    status.decreaseTier(status.value > 1 ? 1 : 0);
-                    return e;
-                  });
-                }}
-              >
-                {<ArrowDownIcon style={iconStyle} />}Decrease tier
-              </Item>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                {[1, 2, 3, 4, 5, 6].map((n) => {
-                  return (
-                    <Item
-                      style={{
-                        border: status.hasTier(n)
-                          ? `4px solid ${constant.STATUS_COLOR}`
-                          : "4px solid transparent",
-                        borderRadius: "4px",
-                      }}
-                      onClick={() => {
-                        updateEntity(status.id, (e) => {
-                          status.addTier(n);
-                          return e;
-                        });
-                      }}
-                    >
-                      {n}
-                    </Item>
-                  );
-                })}
-              </div>
 
-              <Item onClick={() => setEditing(status.id)}>
+
+
+              <Item onClick={() => {
+                if (statusRef.current && onShowEditDialog) {
+                  const rect = statusRef.current.getBoundingClientRect();
+                  onShowEditDialog({ x: rect.right + 8, y: rect.top });
+                }
+              }}>
                 {<PencilIcon style={iconStyle} />}Edit
               </Item>
               <Item onClick={() => removeEntity(status)}>
@@ -169,4 +118,5 @@ export type Props = {
   updateEntity: (id: string, updater: (ent: Entity) => Entity) => void;
   addModifier: any;
   removeEntity: any;
+  onShowEditDialog?: (position: { x: number; y: number }) => void;
 };

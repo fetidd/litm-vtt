@@ -66,6 +66,7 @@ export default function Drawer({
         background: "rgba(46, 43, 41, 1)",
         display: "flex",
         flexDirection: "column",
+        userSelect: "none",
       }}
     >
       {user?.role === "narrator" && (
