@@ -36,6 +36,7 @@ type GameTableProps = {
   websocket: WebSocket | null;
   gameTableEntities: EntityPositionData[];
   setGameTableEntities: StateSetter<EntityPositionData[]>;
+  backgroundImage: string | null;
   addModifier: (
     entity: ModifierEntity,
     polarity: "add" | "subtract",
@@ -47,6 +48,7 @@ export function GameTable({
   websocket,
   gameTableEntities,
   setGameTableEntities,
+  backgroundImage,
   addModifier,
 }: GameTableProps) {
   const [lastMovedEntityId, setLastMovedEntityId] = useState<string | null>(
@@ -252,10 +254,11 @@ export function GameTable({
               style={{
                 height: `${tableSize.height}px`,
                 width: `${tableSize.width}px`,
-                background:
-                  "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
-                backgroundRepeat: "repeat",
-                backgroundSize: "60px 60px",
+                background: backgroundImage 
+                  ? `url(${backgroundImage})` 
+                  : "conic-gradient(rgba(7, 75, 201, 0.14) 90deg,rgba(82, 96, 134, 0.33) 90deg 180deg,rgba(7, 75, 201, 0.14) 180deg 270deg,rgba(82, 96, 134, 0.33) 270deg)",
+                backgroundRepeat: backgroundImage ? "no-repeat" : "repeat",
+                backgroundSize: backgroundImage ? "cover" : "60px 60px",
                 backgroundPosition: "top left",
               }}
               onContextMenu={displayContextMenu}

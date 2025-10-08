@@ -43,6 +43,7 @@ export function App() {
   const [rollMessages, setRollMessages] = useState<
     { id: string; text: string }[]
   >([]);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [drawerHeight, setDrawerHeight] = useState(() => {
     const saved = localStorage.getItem('drawerHeight');
@@ -85,6 +86,10 @@ export function App() {
         }
         case "rollResponse": {
           handleRollResponse(message, setRollMessages);
+          break;
+        }
+        case "backgroundImage": {
+          setBackgroundImage(message.imageUrl);
           break;
         }
         default: {
@@ -228,6 +233,7 @@ export function App() {
                 websocket={ws}
                 gameTableEntities={gameTableEntities}
                 setGameTableEntities={setGameTableEntities}
+                backgroundImage={backgroundImage}
                 addModifier={addModifier}
               />
             </TransformWrapper>
