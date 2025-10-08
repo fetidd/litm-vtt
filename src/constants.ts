@@ -15,6 +15,7 @@ export default {
     adventure: "rgba(134, 60, 42, 1)",
     greatness: "rgba(35, 73, 117, 1)",
   },
+  JOIN_CHAR: "+++"
 };
 
 export const CARD_STYLE: React.CSSProperties = {

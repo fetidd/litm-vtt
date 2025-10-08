@@ -24,27 +24,14 @@ export default function SpecialImprovements({
         Special Improvements
       </h3>
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {specialImprovements.map((imp: string, n: number) =>
-          editing ? (
-            <div key={n} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              <input
-                type="text"
-                value={imp}
-                onChange={(e) => {
-                  const newImprovements = [...specialImprovements];
-                  newImprovements[n] = e.target.value;
-                  onUpdate(newImprovements);
-                }}
-                style={{ padding: "4px", margin: "2px", flex: 1 }}
-              />
-              <Button onClick={() => onUpdate(specialImprovements.filter((_, i) => i !== n))}>×</Button>
-            </div>
-          ) : (
+        {specialImprovements.map((imp: string, n: number) => {
+          const [name, description] = imp.split(": ");
+          return (
             <span key={n} style={{ padding: "4px" }}>
-              {imp}
+              {name}
             </span>
-          )
-        )}
+          );
+        })}
         {editing && (
           <Button onClick={() => onUpdate([...specialImprovements, ""])}>
             + Add Improvement

@@ -17,6 +17,6 @@ export default function Quest({
       style={{ padding: "4px", margin: "4px", resize: "vertical", minHeight: "60px" }}
     />
   ) : (
-    <div style={{ padding: "4px", margin: "4px 0px", resize: "vertical", minHeight: "60px" }}>{quest}</div>
+    <div style={{ padding: "4px", margin: "4px 0px", resize: "vertical", minHeight: "60px", fontStyle: "italic" }}>{`"${quest}"`}</div>
   );
 }

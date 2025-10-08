@@ -26,5 +26,6 @@ export function handleNewWebSocketConnection(
     type: "drawerEntitySync",
     entities: drawerEntities.map((entity) => entity.serialize()),
   };
-  ws.send(JSON.stringify(syncMessageDrawer));
+  const serialized = JSON.stringify(syncMessageDrawer);
+  ws.send(serialized);
 }
