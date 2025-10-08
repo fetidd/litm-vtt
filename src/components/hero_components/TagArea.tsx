@@ -1,6 +1,6 @@
-import { Tag as LitmTag } from "../litm/tag";
-import Tag from "./Tag";
-import Button from "./Button";
+import { Tag as LitmTag } from "@/litm/tag";
+import Tag from "@/components/game_entities/Tag";
+import Button from "@/components/ui/Button";
 import { useState } from "react";
 
 interface TagAreaProps {

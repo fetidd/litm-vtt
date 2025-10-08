@@ -1,13 +1,13 @@
-import { Hero as LitmHero } from "../../litm/hero";
+import { Hero as LitmHero } from "@/litm/hero";
 import BaseCard from "./BaseCard";
-import Button from "../Button";
-import Promise from "../Promise";
-import Quintessences from "../Quintessences";
-import Backpack from "../Backpack";
-import Notes from "../Notes";
-import Relationships from "../Relationships";
-import HeroName from "../HeroName";
-import PlayerName from "../PlayerName";
+import Button from "@/components/ui/Button";
+import Promise from "@/components/hero_components/Promise";
+import Quintessences from "@/components/hero_components/Quintessences";
+import Backpack from "@/components/hero_components/Backpack";
+import Notes from "@/components/hero_components/Notes";
+import Relationships from "@/components/hero_components/Relationships";
+import HeroName from "@/components/hero_components/HeroName";
+import PlayerName from "@/components/hero_components/PlayerName";
 
 export default function HeroCard({
   hero,

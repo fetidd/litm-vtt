@@ -1,4 +1,4 @@
-import { Fellowship as LitmFellowship } from "../../litm/fellowship";
+import { Fellowship as LitmFellowship } from "@/litm/fellowship";
 import ThemeCard from "./ThemeCard";
 
 export default function FellowshipThemeCard({

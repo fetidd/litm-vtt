@@ -1,6 +1,6 @@
 import constants from "@/constants";
-import type Modifier from "../../litm/modifier";
-import Button from "../Button";
+import type Modifier from "@/litm/modifier";
+import Button from "@/components/ui/Button";
 
 export default function RollWidgetInput({
   selectedModifiers,

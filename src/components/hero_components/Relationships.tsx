@@ -1,5 +1,5 @@
-import Tag from "./Tag";
-import Button from "./Button";
+import Tag from "@/components/game_entities/Tag";
+import Button from "@/components/ui/Button";
 import { useState } from "react";
 
 interface RelationshipsProps {

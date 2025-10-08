@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Entity, ModifierEntity } from "../../litm/entity";
-import { Tag as LitmTag } from "../../litm/tag";
-import { Status as LitmStatus } from "../../litm/status";
+import { Entity, ModifierEntity } from "@/litm/entity";
+import { Tag as LitmTag } from "@/litm/tag";
+import { Status as LitmStatus } from "@/litm/status";
 import { useTransformContext } from "react-zoom-pan-pinch";
-import Tag from "../Tag";
-import constant from "../../constants";
-import Status from "../Status";
+import Tag from "@/components/game_entities/Tag";
+import constant from "@/constants";
+import Status from "@/components/game_entities/Status";
 import {
   Item,
   Menu,
@@ -15,7 +15,7 @@ import {
   type ItemParams,
   type TriggerEvent,
 } from "react-contexify";
-import { type EntityPositionData } from "../../types";
+import { type EntityPositionData } from "@/types";
 import {
   ArrowDownIcon,
   FireIcon,

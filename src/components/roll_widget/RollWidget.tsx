@@ -1,9 +1,9 @@
 import RollWidgetLog from "./RollWidgetLog";
 import RollWidgetInput from "./RollWidgetInput";
-import type Modifier from "../../litm/modifier";
-import { RollRequest } from "../../messaging/message";
+import type Modifier from "@/litm/modifier";
+import { RollRequest } from "@/messaging/message";
 import { useContext } from "react";
-import { UserContext } from "../../App";
+import { UserContext } from "@/App";
 
 type Props = {
   websocket: WebSocket | null;

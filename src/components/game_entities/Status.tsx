@@ -1,6 +1,6 @@
 import { Entity } from "@/litm/entity";
-import constant, { iconStyle } from "../constants";
-import { Status as LitmStatus } from "../litm/status";
+import constant, { iconStyle } from "@/constants";
+import { Status as LitmStatus } from "@/litm/status";
 import type React from "react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";

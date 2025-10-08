@@ -3,12 +3,12 @@ import type { Challenge } from "@/litm/challenge";
 import type { Entity, ModifierEntity } from "@/litm/entity";
 import { type Hero as LitmHero } from "@/litm/hero";
 import { useContext, useState } from "react";
-import HeroCard from "../cards/HeroCard";
+import HeroCard from "@/components/cards/HeroCard";
 import { TransformComponent, useTransformContext } from "react-zoom-pan-pinch";
-import ThemeCard from "../cards/HeroThemeCard";
+import ThemeCard from "@/components/cards/HeroThemeCard";
 import { HeroTheme as LitmTheme } from "@/litm/theme";
 import { Tag } from "@/litm/tag";
-import FellowshipThemeCard from "../cards/FellowshipThemeCard";
+import FellowshipThemeCard from "@/components/cards/FellowshipThemeCard";
 
 export default function Drawer({
   websocket,

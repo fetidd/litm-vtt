@@ -1,4 +1,4 @@
-import { HeroTheme as LitmTheme } from "../../litm/theme";
+import { HeroTheme as LitmTheme } from "@/litm/theme";
 import ThemeCard from "./ThemeCard";
 
 export default function HeroThemeCard({

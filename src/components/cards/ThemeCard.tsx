@@ -1,12 +1,12 @@
 import constants from "@/constants";
 import { Tag as LitmTag } from "../../litm/tag";
-import Tag from "../Tag";
+import Tag from "@/components/game_entities/Tag";
 import BaseCard from "./BaseCard";
-import Button from "../Button";
-import Advancement from "../Advancement";
-import TagArea from "../TagArea";
-import SpecialImprovements from "../SpecialImprovements";
-import Quest from "../Quest";
+import Button from "@/components/ui/Button";
+import Advancement from "@/components/hero_components/Advancement";
+import TagArea from "@/components/hero_components/TagArea";
+import SpecialImprovements from "@/components/hero_components/SpecialImprovements";
+import Quest from "@/components/hero_components/Quest";
 
 interface ThemeCardProps {
   theme: any;

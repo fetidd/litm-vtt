@@ -13,14 +13,14 @@ import {
   DeleteGameTableEntity,
   UpdateGameTableEntityDetails,
   UpdateGameTableEntityPosition,
-} from "../../messaging/message";
+} from "@/messaging/message";
 import {
   TransformComponent,
   useTransformContext,
 } from "react-zoom-pan-pinch";
-import constant from "../../constants";
-import { Tag as LitmTag } from "../../litm/tag";
-import { Status as LitmStatus } from "../../litm/status";
+import constant from "@/constants";
+import { Tag as LitmTag } from "@/litm/tag";
+import { Status as LitmStatus } from "@/litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
 import {
   Item,

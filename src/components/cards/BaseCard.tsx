@@ -1,6 +1,6 @@
 import { CARD_STYLE } from "@/constants";
 import { useState, useRef, useEffect, type ReactNode } from "react";
-import Button from "../Button";
+import Button from "../ui/Button";
 
 interface BaseCardProps {
   title: string;

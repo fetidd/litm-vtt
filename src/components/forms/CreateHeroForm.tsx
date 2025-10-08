@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Hero as LitmHero } from "@/litm/hero";
-import Button from "./Button";
+import Button from "@/components/ui/Button";
 
 interface CreateHeroFormProps {
   onCreateHero: (hero: LitmHero) => void;

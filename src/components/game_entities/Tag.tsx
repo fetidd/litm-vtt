@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
-import constant, { iconStyle } from "../constants";
-import { Tag as LitmTag } from "../litm/tag";
+import constant, { iconStyle } from "@/constants";
+import { Tag as LitmTag } from "@/litm/tag";
 import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
 import { createPortal } from "react-dom";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 import type { Entity } from "@/litm/entity";
 import { UserContext } from "@/App";
-import TagInput from "./TagInput";
+import TagInput from "@/components/hero_components/TagInput";
 
 export default function Tag({
   tag,
