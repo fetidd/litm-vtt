@@ -37,8 +37,8 @@ export default function Tag({
     borderRadius: "4px",
     width: "fit-content",
     minWidth: isTheme ? "120px" : "80px",
-    padding: "0 12px",
-    height: isTheme ? "60" : "30px",
+    padding: isTheme ? "0 16px" : "0 12px",
+    height: isTheme ? "40px" : "30px",
     color: `${tag.isScratched ? "#25252560" : "#333"}`, // TODO add scratched color to constant?
     alignContent: "center",
     fontSize: isTheme ? "1.2rem" : "1rem",

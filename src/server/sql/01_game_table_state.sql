@@ -1,0 +1,5 @@
+CREATE TABLE GameTableState (
+    entityId STRING PRIMARY KEY NOT NULL, 
+    x REAL NOT NULL, 
+    y REAL NOT NULL
+);

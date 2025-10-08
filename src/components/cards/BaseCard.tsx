@@ -25,13 +25,15 @@ export default function BaseCard({
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
 
+  const headerHeight = 40;
+
   useEffect(() => {
     const measureHeight = () => {
       if (frontRef.current && backRef.current) {
         const frontHeight = frontRef.current.offsetHeight;
         const backHeight = backRef.current.offsetHeight;
         const maxContentHeight = Math.max(frontHeight, backHeight);
-        setCardHeight(maxContentHeight + 40); // +40 for header height
+        setCardHeight(maxContentHeight + headerHeight); // +40 for header height
       }
     };
     
@@ -46,7 +48,8 @@ export default function BaseCard({
     }, 50);
   };
 
-
+  const sideStyle: React.CSSProperties = { padding: "12px", height: cardHeight ? `${cardHeight - headerHeight}px` : 'auto', display: "flex", flexDirection: "column"};
+  const flippingStyle: React.CSSProperties = { padding: "12px", display: "flex", flexDirection: "column", visibility: "hidden", position: "absolute", width: "268px"};
 
   return (
     <div style={{
@@ -78,12 +81,12 @@ export default function BaseCard({
           </Button>
         </div>
       </div>
-      {side === "front" && !isFlipping && <div style={{ padding: "12px", height: cardHeight ? `${cardHeight - 40}px` : 'auto', display: "flex", flexDirection: "column" }}>{frontContent}</div>}
-      {side === "back" && !isFlipping && <div style={{ padding: "12px", height: cardHeight ? `${cardHeight - 40}px` : 'auto', display: "flex", flexDirection: "column" }}>{backContent}</div>}
+      {side === "front" && !isFlipping && <div style={sideStyle}>{frontContent}</div>}
+      {side === "back" && !isFlipping && <div style={sideStyle}>{backContent}</div>}
       {!cardHeight && (
         <>
-          <div ref={frontRef} style={{ padding: "12px", display: "flex", flexDirection: "column", visibility: "hidden", position: "absolute", width: "268px" }}>{frontContent}</div>
-          <div ref={backRef} style={{ padding: "12px", display: "flex", flexDirection: "column", visibility: "hidden", position: "absolute", width: "268px" }}>{backContent}</div>
+          <div ref={frontRef} style={flippingStyle}>{frontContent}</div>
+          <div ref={backRef} style={flippingStyle}>{backContent}</div>
         </>
       )}
     </div>

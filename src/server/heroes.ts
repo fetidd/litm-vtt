@@ -60,6 +60,12 @@ export const hero: Hero = Hero.deserialize({
           isScratched: false,
           owner: "ben",
         }),
+        Tag.deserialize({
+          id: "example-othertag-9",
+          name: "hide my curse",
+          isScratched: false,
+          owner: "ben",
+        }),
       ],
       weaknessTags: [
         Tag.deserialize({

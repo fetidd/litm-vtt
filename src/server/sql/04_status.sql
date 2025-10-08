@@ -1,0 +1,6 @@
+CREATE TABLE Status (
+    id STRING PRIMARY KEY NOT NULL, 
+    name STRING NOT NULL, 
+    tiers STRING NOT NULL, 
+    owner STRING NOT NULL
+);

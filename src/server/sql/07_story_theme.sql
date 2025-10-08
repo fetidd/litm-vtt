@@ -1,0 +1,3 @@
+CREATE TABLE StoryTheme (
+    id STRING PRIMARY KEY NOT NULL
+);

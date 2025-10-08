@@ -11,6 +11,8 @@ import User from "@/user";
 import { generateId } from "@/utils";
 import { readableStreamToFormData } from "bun";
 import { Database, type Changes, type SQLQueryBindings } from "bun:sqlite";
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
 import { LoremIpsum } from "lorem-ipsum";
 import { fellowship1, hero } from "./heroes";
 import constants from '@/constants';
@@ -25,82 +27,28 @@ export default class LitmDatabase {
 
   bootstrap() {
     // TODO this is just while developing the database initially
-    this.db.query("drop table if exists GameTableState").run();
-    this.db.query("drop table if exists Tag").run();
-    this.db.query("drop table if exists Status").run();
-    this.db.query("drop table if exists HeroTheme").run();
-    this.db.query("drop table if exists StoryTheme").run();
-    this.db.query("drop table if exists User").run();
-    this.db.query("drop table if exists Hero").run();
-    this.db.query("drop table if exists Challenge").run();
-    this.db.query("drop table if exists Fellowship").run();
+    [
+      "GameTableState",
+      "Tag",
+      "Status",
+      "HeroTheme",
+      "StoryTheme",
+      "User",
+      "Hero",
+      "Challenge",
+      "Fellowship"
+    ].forEach(table => this.db.query(`drop table if exists ${table}`).run());
 
-    this.db
-      .query(
-        "CREATE TABLE GameTableState (entityId STRING PRIMARY KEY NOT NULL, x REAL NOT NULL, y REAL NOT NULL);",
-      )
-      .run();
-    this.db
-      .query(
-        "CREATE TABLE Tag (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, isScratched boolean NOT NULL, owner STRING NOT NULL);",
-      )
-      .run();
-    this.db
-      .query(
-        "CREATE TABLE Status (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, tiers STRING NOT NULL, owner STRING NOT NULL);",
-      )
-      .run();
-    this.db
-      .query(
-        "CREATE TABLE User (username STRING PRIMARY KEY NOT NULL, hashedPassword STRING NOT NULL, role STRING NOT NULL)",
-      )
-      .run();
-    this.db
-      .query(
-        `CREATE TABLE HeroTheme (
-            id STRING PRIMARY KEY NOT NULL,
-            name STRING NOT NULL, 
-            might STRING NOT NULL DEFAULT 'origin', 
-            type STRING NOT NULL DEFAULT '',
-            otherTags STRING NOT NULL DEFAULT "",
-            weaknessTags STRING NOT NULL DEFAULT "",
-            improve INTEGER,
-            milestone INTEGER,
-            abandon INTEGER,
-            description STRING NOT NULL DEFAULT "",
-            quest STRING NOT NULL DEFAULT "",
-            specialImprovements STRING NOT NULL DEFAULT "",
-            owner STRING NOT NULL,
-            isScratched BOOLEAN NOT NULL
-            );`,
-      )
-      .run();
-    this.db
-      .query(
-        `CREATE TABLE Fellowship (
-            id STRING PRIMARY KEY NOT NULL,
-            name STRING NOT NULL, 
-            otherTags STRING NOT NULL DEFAULT "",
-            weaknessTags STRING NOT NULL DEFAULT "",
-            improve INTEGER,
-            milestone INTEGER,
-            abandon INTEGER,
-            description STRING NOT NULL DEFAULT "",
-            quest STRING NOT NULL DEFAULT "",
-            specialImprovements STRING NOT NULL DEFAULT "",
-            owner STRING NOT NULL,
-            isScratched BOOLEAN NOT NULL
-            );`,
-      )
-      .run();
-    this.db
-      .query("CREATE TABLE StoryTheme (id STRING PRIMARY KEY NOT NULL);")
-      .run();
-    this.db
-      .query(
-        "CREATE TABLE Hero (id STRING PRIMARY KEY NOT NULL, name STRING NOT NULL, promise NUMBER NOT NULL, description STRING NOT NULL DEFAULT '', themes STRING NOT NULL DEFAULT '', backpack STRING NOT NULL DEFAULT '', relationships STRING NOT NULL DEFAULT '', fellowship STRING, owner STRING NOT NULL);",
-      )
-      .run();
+    // Execute SQL files in order
+    const sqlDir = join(__dirname, 'sql');
+    const sqlFiles = readdirSync(sqlDir).sort();
+    
+    sqlFiles.forEach(file => {
+      if (file.endsWith('.sql')) {
+        const sqlContent = readFileSync(join(sqlDir, file), 'utf8');
+        this.db.query(sqlContent).run();
+      }
+    });
 
     // POPULATE DB
     // users
