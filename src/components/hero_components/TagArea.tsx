@@ -1,7 +1,9 @@
 import { Tag as LitmTag } from "@/litm/tag";
 import Tag from "@/components/game_entities/Tag";
 import Button from "@/components/ui/Button";
+import TagEditDialog from "@/components/ui/TagEditDialog";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface TagAreaProps {
   otherTags: any[];
@@ -20,6 +22,7 @@ export default function TagArea({
   owner,
   onUpdate
 }: TagAreaProps) {
+  const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
   return (
     <>
       {otherTags.map((tag: any) => (
@@ -30,6 +33,7 @@ export default function TagArea({
             removeEntity={undefined}
             addModifier={addModifier}
             onCard={true}
+            onShowEditDialog={(position) => setEditingTag({ tag, position })}
           />
         </div>
       ))}
@@ -42,9 +46,26 @@ export default function TagArea({
             removeEntity={undefined}
             addModifier={addModifier}
             onCard={true}
+            onShowEditDialog={(position) => setEditingTag({ tag, position })}
           />
         </div>
       ))}
+      {editingTag && createPortal(
+        <TagEditDialog
+          tag={editingTag.tag}
+          position={editingTag.position}
+          onSave={(name, isPublic) => {
+            updateEntity(editingTag.tag.id, (tag: any) => {
+              tag.name = name;
+              return tag;
+            });
+            setEditingTag(null);
+          }}
+          onCancel={() => setEditingTag(null)}
+          isOwner={true}
+        />,
+        document.body,
+      )}
     </>
   );
 }

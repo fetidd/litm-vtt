@@ -1,6 +1,8 @@
 import Tag from "@/components/game_entities/Tag";
 import Button from "@/components/ui/Button";
+import TagEditDialog from "@/components/ui/TagEditDialog";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface RelationshipsProps {
   relationships: Map<string, any>;
@@ -17,6 +19,7 @@ export default function Relationships({
   owner,
   onUpdate,
 }: RelationshipsProps) {
+  const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
   return (
     <>
       <h3
@@ -56,12 +59,29 @@ export default function Relationships({
                   removeEntity={undefined}
                   addModifier={addModifier}
                   onCard={true}
+                  onShowEditDialog={(position) => setEditingTag({ tag, position })}
                 />
               </div>
             </div>
           );
         })}
       </div>
+      {editingTag && createPortal(
+        <TagEditDialog
+          tag={editingTag.tag}
+          position={editingTag.position}
+          onSave={(name, isPublic) => {
+            updateEntity(editingTag.tag.id, (tag: any) => {
+              tag.name = name;
+              return tag;
+            });
+            setEditingTag(null);
+          }}
+          onCancel={() => setEditingTag(null)}
+          isOwner={true}
+        />,
+        document.body,
+      )}
     </>
   );
 }

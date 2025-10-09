@@ -7,6 +7,9 @@ import Advancement from "@/components/hero_components/Advancement";
 import TagArea from "@/components/hero_components/TagArea";
 import SpecialImprovements from "@/components/hero_components/SpecialImprovements";
 import Quest from "@/components/hero_components/Quest";
+import TagEditDialog from "@/components/ui/TagEditDialog";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ThemeCardProps {
   theme: any;
@@ -27,6 +30,7 @@ export default function ThemeCard({
   headerColor,
   style = {},
 }: ThemeCardProps) {
+  const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
   const themeAsTag = LitmTag.deserialize(theme);
   
   const getTitle = () => {
@@ -53,6 +57,7 @@ export default function ThemeCard({
             removeEntity={undefined}
             addModifier={addModifier}
             onCard={true}
+            onShowEditDialog={(position) => setEditingTag({ tag: themeAsTag, position })}
           />
         </div>
         <TagArea
@@ -86,13 +91,31 @@ export default function ThemeCard({
   );
 
   return (
-    <BaseCard
-      title={getTitle()}
-      headerColor={getHeaderColor()}
-      entityId={theme.id}
-      frontContent={frontContent}
-      backContent={backContent}
-      style={style}
-    />
+    <>
+      <BaseCard
+        title={getTitle()}
+        headerColor={getHeaderColor()}
+        entityId={theme.id}
+        frontContent={frontContent}
+        backContent={backContent}
+        style={style}
+      />
+      {editingTag && createPortal(
+        <TagEditDialog
+          tag={editingTag.tag}
+          position={editingTag.position}
+          onSave={(name, isPublic) => {
+            updateEntity(editingTag.tag.id, (tag: any) => {
+              tag.name = name;
+              return tag;
+            });
+            setEditingTag(null);
+          }}
+          onCancel={() => setEditingTag(null)}
+          isOwner={true}
+        />,
+        document.body,
+      )}
+    </>
   );
 }

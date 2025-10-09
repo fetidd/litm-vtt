@@ -55,6 +55,8 @@ export default function Drawer({
       if (websocket) {
         websocket.updateDrawerEntity(updated, session!);
       }
+    } else {
+      throw new Error("Entity not found or user does not have permission to edit");
     }
   }
 

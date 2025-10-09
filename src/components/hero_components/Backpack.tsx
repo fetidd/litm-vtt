@@ -1,6 +1,8 @@
 import Tag from "@/components/game_entities/Tag";
 import Button from "@/components/ui/Button";
+import TagEditDialog from "@/components/ui/TagEditDialog";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface BackpackProps {
   backpack: any[];
@@ -17,6 +19,7 @@ export default function Backpack({
   owner,
   onUpdate,
 }: BackpackProps) {
+  const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
   return (
     <>
       <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Backpack</h3>
@@ -29,10 +32,27 @@ export default function Backpack({
               removeEntity={undefined}
               addModifier={addModifier}
               onCard={true}
+              onShowEditDialog={(position) => setEditingTag({ tag, position })}
             />
           </div>
         ))}
       </div>
+      {editingTag && createPortal(
+        <TagEditDialog
+          tag={editingTag.tag}
+          position={editingTag.position}
+          onSave={(name, isPublic) => {
+            updateEntity(editingTag.tag.id, (tag: any) => {
+              tag.name = name;
+              return tag;
+            });
+            setEditingTag(null);
+          }}
+          onCancel={() => setEditingTag(null)}
+          isOwner={true}
+        />,
+        document.body,
+      )}
     </>
   );
 }
