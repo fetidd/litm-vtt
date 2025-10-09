@@ -17,14 +17,7 @@ import constant from "@/constants";
 import { Tag as LitmTag } from "@/litm/tag";
 import { Status as LitmStatus } from "@/litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
-import {
-  Item,
-  Menu,
-  Submenu,
-  useContextMenu,
-  type ItemParams,
-  type TriggerEvent,
-} from "react-contexify";
+import { Item, Menu, Submenu, useContextMenu } from "@/components/ui/ContextMenu";
 import { UserContext } from "@/App";
 
 type GameTableProps = {
@@ -49,6 +42,7 @@ export function GameTable({
   const [lastMovedEntityId, setLastMovedEntityId] = useState<string | null>(
     null,
   );
+  const [newEntityId, setNewEntityId] = useState<string | null>(null);
   const transformContext = useTransformContext();
   const [tableSize, setTableSize] = useState({
     width: constant.GAME_TABLE_WIDTH,
@@ -159,6 +153,7 @@ export function GameTable({
     where.y -= transformContext.transformState.positionY;
     setGameTableEntities((prev) => [...prev, { entity: tag, position: where }]);
     createNewGameTableEntity(tag, where.x, where.y);
+    setNewEntityId(tag.id);
   };
 
   const createNewGameBoardStatus = (
@@ -175,6 +170,7 @@ export function GameTable({
       { entity: status, position: where },
     ]);
     createNewGameTableEntity(status, where.x, where.y);
+    setNewEntityId(status.id);
   };
 
   // DND SETUP
@@ -189,33 +185,21 @@ export function GameTable({
   });
 
   const { show } = useContextMenu({ id: "game-table-menu" });
-  function displayContextMenu(e: TriggerEvent) {
+  function displayContextMenu(e: React.MouseEvent) {
     e.stopPropagation();
     show({
       event: e,
       id: "game-table-menu",
     });
   }
-  function handleItemClick({
-    id,
-    event,
-    triggerEvent,
-    data,
-    props,
-  }: ItemParams<{}, { tier?: number }>) {
-    switch (id) {
-      case "new-tier": {
-        createNewGameBoardTag({ x: triggerEvent.pageX, y: triggerEvent.pageY });
-        break;
-      }
-      case "new-status": {
-        createNewGameBoardStatus(
-          { x: triggerEvent.pageX, y: triggerEvent.pageY },
-          data!.tier,
-        );
-        break;
-      }
-    }
+  function handleItemClick(params: { props?: any; triggerEvent: MouseEvent }, tier?: number) {
+    createNewGameBoardTag({ x: params.triggerEvent.pageX, y: params.triggerEvent.pageY });
+  }
+  function handleStatusClick(params: { props?: any; triggerEvent: MouseEvent }, tier: number) {
+    createNewGameBoardStatus(
+      { x: params.triggerEvent.pageX, y: params.triggerEvent.pageY },
+      tier,
+    );
   }
 
   return (
@@ -274,6 +258,8 @@ export function GameTable({
                     updateEntity={updateEntity}
                     addModifier={addModifier}
                     removeEntity={removeEntityFromGameBoard}
+                    autoEdit={newEntityId === entityData.entity.id}
+                    onEditComplete={() => setNewEntityId(null)}
                   />
                 </div>
               ))}
@@ -283,19 +269,16 @@ export function GameTable({
       </DndContext>
 
       <Menu id="game-table-menu">
-        <Item id="new-tier" onClick={(e) => handleItemClick(e)}>
+        <Item onClick={handleItemClick}>
           New tag
         </Item>
         <Submenu label="New status">
-          {[1, 2, 3, 4, 5, 6].map((n) => {
-            return (
-              <Item
-                id="new-status"
-                data={{ tier: n }}
-                onClick={handleItemClick}
-              >{`Tier ${n}`}</Item>
-            );
-          })}
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <Item
+              key={n}
+              onClick={(params) => handleStatusClick(params, n)}
+            >{`Tier ${n}`}</Item>
+          ))}
         </Submenu>
       </Menu>
     </>

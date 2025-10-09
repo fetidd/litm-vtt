@@ -19,8 +19,7 @@ import { handleRollResponse } from "./handlers/rollResponse";
 import { handleUpdateClientGameTableEntityPosition } from "./handlers/updateClientGameTableEntityPosition";
 import { handleClientGameTableEntitySync } from "./handlers/clientGameTableEntitySync";
 import { handleUpdateClientGameTableEntityDetails } from "./handlers/updateClientGameTableEntityDetails";
-import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
-import "react-contexify/dist/ReactContexify.css";
+import { ContextMenuManager, Item, Menu, useContextMenu } from "./components/ui/ContextMenu";
 import Drawer from "./components/drawer/Drawer";
 import { handleClientDrawerEntitySync } from "./handlers/clientDrawerEntitySync";
 import { WebSocketManager } from "./websocket/WebSocketManager";
@@ -242,7 +241,7 @@ export function App() {
 
   const MENU_ID = "menu-id";
   const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: TriggerEvent) {
+  function displayContextMenu(e: React.MouseEvent) {
     show({
       event: e,
       id: MENU_ID,
@@ -408,6 +407,8 @@ export function App() {
             username={user.username}
           />
         </Modal>
+        
+        <ContextMenuManager />
       </div>
     );
   }

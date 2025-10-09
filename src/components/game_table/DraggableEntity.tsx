@@ -9,14 +9,7 @@ import { useTransformContext } from "react-zoom-pan-pinch";
 import Tag from "@/components/game_entities/Tag";
 import constant from "@/constants";
 import Status from "@/components/game_entities/Status";
-import {
-  Item,
-  Menu,
-  Submenu,
-  useContextMenu,
-  type ItemParams,
-  type TriggerEvent,
-} from "react-contexify";
+import { Item, Menu, useContextMenu } from "@/components/ui/ContextMenu";
 import { type EntityPositionData } from "@/types";
 import {
   ArrowDownIcon,
@@ -42,6 +35,8 @@ type DraggableEntityProps = {
     isBurned: boolean,
   ) => void;
   removeEntity: (entity: Entity) => void;
+  autoEdit?: boolean;
+  onEditComplete?: () => void;
 };
 
 export function DraggableEntity({
@@ -52,6 +47,8 @@ export function DraggableEntity({
   updateEntity,
   addModifier,
   removeEntity,
+  autoEdit = false,
+  onEditComplete,
 }: DraggableEntityProps) {
   const { entity, position } = ept;
   const { x, y } = position;
@@ -79,6 +76,15 @@ export function DraggableEntity({
   const user = useContext(UserContext);
   const isMine = user?.username == entity.owner || user?.role == "narrator";
 
+  React.useEffect(() => {
+    if (autoEdit && isMine) {
+      const rect = { right: left + 100, top: top };
+      setEditDialogPosition({ x: rect.right + 8, y: rect.top });
+      setShowEditDialog(true);
+      onEditComplete?.();
+    }
+  }, [autoEdit, isMine, left, top, onEditComplete]);
+
   const style: React.CSSProperties = {
     boxShadow: "8px 8px 20px rgba(0, 0, 0, 0.47)",
     position: "absolute",
@@ -92,7 +98,7 @@ export function DraggableEntity({
 
   const MENU_ID = `draggable-entity-menu-${entity.id}`;
   const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: TriggerEvent) {
+  function displayContextMenu(e: React.MouseEvent) {
     e.stopPropagation();
     show({
       event: e,

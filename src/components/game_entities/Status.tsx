@@ -3,8 +3,7 @@ import constant, { iconStyle } from "@/constants";
 import { Status as LitmStatus } from "@/litm/status";
 import type React from "react";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Item, Menu, useContextMenu, type TriggerEvent } from "react-contexify";
-import { createPortal } from "react-dom";
+import { Item, Menu, useContextMenu } from "@/components/ui/ContextMenu";
 import {
   ArrowDownIcon,
   MinusIcon,
@@ -41,7 +40,7 @@ export default function Status({
 
   const MENU_ID = `status-menu-${status.id}`;
   const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: TriggerEvent) {
+  function displayContextMenu(e: React.MouseEvent) {
     e.stopPropagation();
     show({
       event: e,
@@ -66,37 +65,31 @@ export default function Status({
       <div ref={statusRef} style={style} onContextMenu={displayContextMenu}>
         {text}
       </div>
-      {createPortal(
-        <Menu id={MENU_ID}>
-          <Item onClick={() => addModifier(status, "add", false)}>
-            {<PlusIcon style={iconStyle} />}
-            {`Add status`}
-          </Item>
-          <Item onClick={() => addModifier(status, "subtract", false)}>
-            {<MinusIcon style={iconStyle} />}
-            {`Subtract status`}
-          </Item>
-          {isMine && (
-            <>
-
-
-
-              <Item onClick={() => {
-                if (statusRef.current && onShowEditDialog) {
-                  const rect = statusRef.current.getBoundingClientRect();
-                  onShowEditDialog({ x: rect.right + 8, y: rect.top });
-                }
-              }}>
-                {<PencilIcon style={iconStyle} />}Edit
-              </Item>
-              <Item onClick={() => removeEntity(status)}>
-                {<TrashIcon style={iconStyle} />}Remove
-              </Item>
-            </>
-          )}
-        </Menu>,
-        document.body,
-      )}
+      <Menu id={MENU_ID}>
+        <Item onClick={() => addModifier(status, "add", false)}>
+          <PlusIcon style={iconStyle} />
+          Add status
+        </Item>
+        <Item onClick={() => addModifier(status, "subtract", false)}>
+          <MinusIcon style={iconStyle} />
+          Subtract status
+        </Item>
+        {isMine && (
+          <>
+            <Item onClick={() => {
+              if (statusRef.current && onShowEditDialog) {
+                const rect = statusRef.current.getBoundingClientRect();
+                onShowEditDialog({ x: rect.right + 8, y: rect.top });
+              }
+            }}>
+              <PencilIcon style={iconStyle} />Edit
+            </Item>
+            <Item onClick={() => removeEntity(status)}>
+              <TrashIcon style={iconStyle} />Remove
+            </Item>
+          </>
+        )}
+      </Menu>
     </>
   );
 }
