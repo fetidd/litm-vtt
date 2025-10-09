@@ -3,7 +3,13 @@ import "../assets/spinner.css";
 
 import { GameTable } from "./components/game_table/GameTable";
 import { Entity, ModifierEntity } from "./litm/entity";
-import { createContext, useEffect, useState, type Context } from "react";
+import {
+  createContext,
+  useEffect,
+  useState,
+  type Context,
+  type SetStateAction,
+} from "react";
 import RollWidget from "./components/roll_widget/RollWidget";
 import type Modifier from "./litm/modifier";
 import User from "./user";
@@ -57,6 +63,8 @@ export function App() {
     EntityPositionData[]
   >([]);
   const [drawerEntities, setDrawerEntities] = useState<Entity[]>([]);
+  console.log(drawerEntities.map((e) => e.entityType));
+
   const [drawerLoaded, setDrawerLoaded] = useState(false);
   const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>([]);
   const [rollMessages, setRollMessages] = useState<
@@ -253,18 +261,6 @@ export function App() {
     );
   }
 
-  function handleUpdateEntity(updatedEntity: Entity) {
-    setDrawerEntities((prev) =>
-      prev.map((entity) =>
-        entity.id === updatedEntity.id ? updatedEntity : entity,
-      ),
-    );
-    // Send update to server if websocket is available
-    if (wsManager) {
-      wsManager.updateDrawerEntity(updatedEntity, session!);
-    }
-  }
-
   function handleCreateHero(hero: LitmHero) {
     setDrawerEntities((prev) => [...prev, hero]);
     setShowCreateHeroModal(false);
@@ -375,11 +371,10 @@ export function App() {
                         (entity) => entity.owner === user?.username,
                       )
                 }
-                viewing={"hero"}
                 addModifier={addModifier}
-                onUpdateEntity={handleUpdateEntity}
                 onCreateHero={() => setShowCreateHeroModal(true)}
                 loading={!drawerLoaded}
+                setDrawerEntities={setDrawerEntities}
               />
             </div>
             <div style={{ gridArea: "roll-widget" }}>

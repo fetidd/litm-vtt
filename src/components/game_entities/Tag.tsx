@@ -21,7 +21,7 @@ export default function Tag({
   addModifier,
   isWeakness = false,
   isTheme = false,
-  onShowEditDialog
+  onShowEditDialog,
 }: TagProps) {
   const tagRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +42,11 @@ export default function Tag({
     fontWeight: isTheme ? "bolder" : "normal",
     fontStyle: "italic",
   };
-  let tagObj = <span style={{ textAlign: "center", whiteSpace: "nowrap" }}>{tag.name}</span>;
+  let tagObj = (
+    <span style={{ textAlign: "center", whiteSpace: "nowrap" }}>
+      {tag.name}
+    </span>
+  );
 
   const MENU_ID = `tag-menu-${tag.id}`;
   const { show } = useContextMenu({ id: MENU_ID });
@@ -68,10 +72,8 @@ export default function Tag({
   const isMine = user?.username == tag.owner || user?.role == "narrator";
 
   return (
-    <>
-      <div ref={tagRef} style={style} onContextMenu={displayContextMenu}>
-        {tagObj}
-      </div>
+    <div ref={tagRef} style={style} onContextMenu={displayContextMenu}>
+      {tagObj}
       {createPortal(
         <Menu id={MENU_ID}>
           {isMine && tag.canBurn && !tag.isScratched && (
@@ -118,7 +120,7 @@ export default function Tag({
         </Menu>,
         document.body,
       )}
-    </>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-import { UserContext } from "@/App";
+import { SessionContext, UserContext } from "@/App";
 import type { Challenge } from "@/litm/challenge";
 import type { Entity, ModifierEntity } from "@/litm/entity";
 import { type Hero as LitmHero } from "@/litm/hero";
@@ -12,22 +12,26 @@ import FellowshipThemeCard from "@/components/cards/FellowshipThemeCard";
 import type { WebSocketManager } from "@/websocket/WebSocketManager";
 import ScrollContainer from "@/components/ui/ScrollContainer";
 import Tabs from "@/components/ui/Tabs";
+import type { StateSetter } from "@/types";
 
 export default function Drawer({
   websocket,
   entities,
-  viewing,
+  setDrawerEntities,
   addModifier,
-  onUpdateEntity,
   onCreateHero,
   loading = false,
 }: DrawerProps) {
   const user = useContext(UserContext);
+  const session = useContext(SessionContext);
   const heroes = entities.filter((e) => e.entityType == "hero") as LitmHero[];
   const challenges = entities.filter((e) => e.entityType == "challenge");
-  const myHero = heroes.find(h => h.owner === user?.username);
-  const allHeroes = user?.role === "narrator" ? heroes : heroes.filter(h => h.owner === user?.username);
-  
+  const myHero = heroes.find((h) => h.owner === user?.username);
+  const allHeroes =
+    user?.role === "narrator"
+      ? heroes
+      : heroes.filter((h) => h.owner === user?.username);
+
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (user?.role === "narrator") {
       return allHeroes.length > 0 ? allHeroes[0]!.owner : "challenges";
@@ -36,27 +40,41 @@ export default function Drawer({
   });
 
   function updateEntity(id: string, updater: (ent: Entity) => Entity) {
-    const entity = entities.find(e => e.id === id);
-    if (entity && (user?.role === "narrator" || entity.owner === user?.username)) {
+    const entity = entities.find((e) => e.id === id);
+    if (
+      entity &&
+      (user?.role === "narrator" || entity.owner === user?.username)
+    ) {
       const updated = updater(entity);
-      onUpdateEntity?.(updated);
+      setDrawerEntities((prev) =>
+        prev.map((entity) =>
+          entity.id === updated.id ? updated : entity,
+        ),
+      );
+      // Send update to server if websocket is available
+      if (websocket) {
+        websocket.updateDrawerEntity(updated, session!);
+      }
     }
   }
-  
+
   const getActiveHero = () => {
     if (activeTab === "challenges") return null;
     if (user?.role === "narrator") {
-      return heroes.find(h => h.owner === activeTab);
+      return heroes.find((h) => h.owner === activeTab);
     }
     return myHero;
   };
-  
+
   const activeHero = getActiveHero();
 
-  const tabs = user?.role === "narrator" ? [
-    ...allHeroes.map(hero => ({ id: hero.owner, label: hero.owner })),
-    { id: "challenges", label: "Challenges" }
-  ] : [];
+  const tabs =
+    user?.role === "narrator"
+      ? [
+          ...allHeroes.map((hero) => ({ id: hero.owner, label: hero.owner })),
+          { id: "challenges", label: "Challenges" },
+        ]
+      : [];
 
   return (
     <div
@@ -78,84 +96,97 @@ export default function Drawer({
       )}
       <div style={{ flex: 1, overflow: "hidden" }}>
         {loading ? (
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "center", 
-            alignItems: "center", 
-            height: "100%", 
-            color: "white" 
-          }}>
-            <div style={{ 
-              border: "3px solid #333", 
-              borderTop: "3px solid #68ff03ff", 
-              borderRadius: "50%", 
-              width: "40px", 
-              height: "40px", 
-              animation: "spin 1s linear infinite" 
-            }}></div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              color: "white",
+            }}
+          >
+            <div
+              style={{
+                border: "3px solid #333",
+                borderTop: "3px solid #68ff03ff",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                animation: "spin 1s linear infinite",
+              }}
+            ></div>
           </div>
         ) : (
           <ScrollContainer style={{ height: "100%" }}>
-            <div style={{ padding: "8px", display: "flex", gap: "8px", alignItems: "flex-start" }}>
-            {activeTab === "challenges" ? (
-              <div style={{ color: "white", padding: "20px" }}>
-                <h3>Challenges</h3>
-                <p>Challenge management coming soon...</p>
-              </div>
-            ) : activeHero ? (
-              <>
-                <HeroCard
-                  hero={activeHero}
-                  updateEntity={updateEntity}
-                  addModifier={addModifier}
-                  removeEntity={undefined}
-                />
-                {activeHero.themes.map((theme) => (
-                  <ThemeCard
-                    key={theme.id}
-                    theme={theme as LitmTheme}
+            <div
+              style={{
+                padding: "8px",
+                display: "flex",
+                gap: "8px",
+                alignItems: "flex-start",
+              }}
+            >
+              {activeTab === "challenges" ? (
+                <div style={{ color: "white", padding: "20px" }}>
+                  <h3>Challenges</h3>
+                  <p>Challenge management coming soon...</p>
+                </div>
+              ) : activeHero ? (
+                <>
+                  <HeroCard
+                    hero={activeHero}
                     updateEntity={updateEntity}
                     addModifier={addModifier}
                     removeEntity={undefined}
                   />
-                ))}
-                {activeHero.fellowship && (
-                  <FellowshipThemeCard
-                    theme={activeHero.fellowship}
-                    updateEntity={updateEntity}
-                    addModifier={addModifier}
-                    removeEntity={undefined}
-                  />
-                )}
-              </>
-            ) : user?.role === "player" ? (
-              <div style={{ 
-                color: "white", 
-                padding: "20px", 
-                textAlign: "center", 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                gap: "16px" 
-              }}>
-                <h3>No Hero Found</h3>
-                <p>You need to create a hero to get started.</p>
-                <button
-                  onClick={onCreateHero}
+                  {activeHero.themes.map((theme) => (
+                    <ThemeCard
+                      key={theme.id}
+                      theme={theme as LitmTheme}
+                      updateEntity={updateEntity}
+                      addModifier={addModifier}
+                      removeEntity={undefined}
+                    />
+                  ))}
+                  {activeHero.fellowship && (
+                    <FellowshipThemeCard
+                      theme={activeHero.fellowship}
+                      updateEntity={updateEntity}
+                      addModifier={addModifier}
+                      removeEntity={undefined}
+                    />
+                  )}
+                </>
+              ) : user?.role === "player" ? (
+                <div
                   style={{
-                    padding: "12px 24px",
-                    fontSize: "16px",
-                    backgroundColor: "#68ff03ff",
-                    color: "black",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer"
+                    color: "white",
+                    padding: "20px",
+                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "16px",
                   }}
                 >
-                  Click Here to Create Your Hero
-                </button>
-              </div>
-            ) : null}
+                  <h3>No Hero Found</h3>
+                  <p>You need to create a hero to get started.</p>
+                  <button
+                    onClick={onCreateHero}
+                    style={{
+                      padding: "12px 24px",
+                      fontSize: "16px",
+                      backgroundColor: "#68ff03ff",
+                      color: "black",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Click Here to Create Your Hero
+                  </button>
+                </div>
+              ) : null}
             </div>
           </ScrollContainer>
         )}
@@ -167,7 +198,7 @@ export default function Drawer({
 interface DrawerProps {
   websocket: WebSocketManager | null;
   entities: Entity[];
-  viewing: "hero" | "challenges";
+  setDrawerEntities: StateSetter<Entity[]>;
   addModifier: (
     entity: ModifierEntity,
     polarity: "add" | "subtract",
