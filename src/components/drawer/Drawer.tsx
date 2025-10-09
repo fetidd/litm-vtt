@@ -11,6 +11,7 @@ import { Tag } from "@/litm/tag";
 import FellowshipThemeCard from "@/components/cards/FellowshipThemeCard";
 import type { WebSocketManager } from "@/websocket/WebSocketManager";
 import ScrollContainer from "@/components/ui/ScrollContainer";
+import Tabs from "@/components/ui/Tabs";
 
 export default function Drawer({
   websocket,
@@ -52,6 +53,11 @@ export default function Drawer({
   
   const activeHero = getActiveHero();
 
+  const tabs = user?.role === "narrator" ? [
+    ...allHeroes.map(hero => ({ id: hero.owner, label: hero.owner })),
+    { id: "challenges", label: "Challenges" }
+  ] : [];
+
   return (
     <div
       style={{
@@ -68,37 +74,7 @@ export default function Drawer({
       }}
     >
       {user?.role === "narrator" && (
-        <div style={{ display: "flex", background: "rgba(30, 30, 30, 1)", borderBottom: "1px solid #555" }}>
-          {allHeroes.map(hero => (
-            <button
-              key={hero.owner}
-              onClick={() => setActiveTab(hero.owner)}
-              style={{
-                padding: "8px 12px",
-                background: activeTab === hero.owner ? "rgba(104, 255, 3, 0.2)" : "transparent",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-            >
-              {hero.owner}
-            </button>
-          ))}
-          <button
-            onClick={() => setActiveTab("challenges")}
-            style={{
-              padding: "8px 12px",
-              background: activeTab === "challenges" ? "rgba(104, 255, 3, 0.2)" : "transparent",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "12px"
-            }}
-          >
-            Challenges
-          </button>
-        </div>
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       )}
       <div style={{ flex: 1, overflow: "hidden" }}>
         {loading ? (
