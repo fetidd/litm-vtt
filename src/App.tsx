@@ -19,7 +19,7 @@ import { handleRollResponse } from "./handlers/rollResponse";
 import { handleUpdateClientGameTableEntityPosition } from "./handlers/updateClientGameTableEntityPosition";
 import { handleClientGameTableEntitySync } from "./handlers/clientGameTableEntitySync";
 import { handleUpdateClientGameTableEntityDetails } from "./handlers/updateClientGameTableEntityDetails";
-import { ContextMenuManager, Item, Menu, useContextMenu } from "./components/ui/ContextMenu";
+import { ContextMenuProvider, Item, ContextMenuWrapper, useContextMenu } from "./components/ui/ContextMenu";
 import Drawer from "./components/drawer/Drawer";
 import { handleClientDrawerEntitySync } from "./handlers/clientDrawerEntitySync";
 import { WebSocketManager } from "./websocket/WebSocketManager";
@@ -239,14 +239,9 @@ export function App() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const MENU_ID = "menu-id";
-  const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: React.MouseEvent) {
-    show({
-      event: e,
-      id: MENU_ID,
-    });
-  }
+  const appMenu = (
+    <Item disabled>Top level</Item>
+  );
 
   function addModifier(
     entity: ModifierEntity,
@@ -283,13 +278,14 @@ export function App() {
 
   if (user) {
     return (
-      <div
-        className="app"
-        style={{ ...style, position: "relative" }}
-        onContextMenu={displayContextMenu}
-      >
-        <UserContext value={user}>
-          <SessionContext value={session}>
+      <ContextMenuProvider>
+        <ContextMenuWrapper menu={appMenu}>
+          <div
+            className="app"
+            style={{ ...style, position: "relative" }}
+          >
+          <UserContext value={user}>
+            <SessionContext value={session}>
             <div
               style={{
                 gridArea: "menu-bar",
@@ -389,27 +385,25 @@ export function App() {
                 clearModifiers={() => setSelectedModifiers([])}
               />
             </div>
-          </SessionContext>
-        </UserContext>
+            </SessionContext>
+          </UserContext>
 
-        <Menu id={MENU_ID}>
-          <Item disabled>Top level</Item>
-        </Menu>
 
-        <Modal
-          isOpen={showCreateHeroModal}
-          onClose={() => setShowCreateHeroModal(false)}
-          title="Create Your Hero"
-        >
-          <CreateHeroForm
-            onCreateHero={handleCreateHero}
-            onCancel={() => setShowCreateHeroModal(false)}
-            username={user.username}
-          />
-        </Modal>
-        
-        <ContextMenuManager />
-      </div>
+
+          <Modal
+            isOpen={showCreateHeroModal}
+            onClose={() => setShowCreateHeroModal(false)}
+            title="Create Your Hero"
+          >
+            <CreateHeroForm
+              onCreateHero={handleCreateHero}
+              onCancel={() => setShowCreateHeroModal(false)}
+              username={user.username}
+            />
+          </Modal>
+          </div>
+        </ContextMenuWrapper>
+      </ContextMenuProvider>
     );
   }
 

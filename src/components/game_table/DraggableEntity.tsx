@@ -9,7 +9,7 @@ import { useTransformContext } from "react-zoom-pan-pinch";
 import Tag from "@/components/game_entities/Tag";
 import constant from "@/constants";
 import Status from "@/components/game_entities/Status";
-import { Item, Menu, useContextMenu } from "@/components/ui/ContextMenu";
+import { Item, ContextMenuWrapper, useContextMenu } from "@/components/ui/ContextMenu";
 import { type EntityPositionData } from "@/types";
 import {
   ArrowDownIcon,
@@ -96,25 +96,13 @@ export function DraggableEntity({
     touchAction: "none",
   };
 
-  const MENU_ID = `draggable-entity-menu-${entity.id}`;
-  const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: React.MouseEvent) {
-    e.stopPropagation();
-    show({
-      event: e,
-      id: MENU_ID,
-      props: {
-        entity: entity,
-      },
-    });
-  }
+
 
   const draggableAttrs = { ...listeners, ...attributes };
   let wrapperAttrs = {
     className: "draggable-entity",
     ref: setNodeRef,
     style: style,
-    onContextMenu: displayContextMenu,
   };
   if (isMine) {
     wrapperAttrs = { ...wrapperAttrs, ...draggableAttrs };

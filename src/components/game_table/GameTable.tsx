@@ -17,7 +17,7 @@ import constant from "@/constants";
 import { Tag as LitmTag } from "@/litm/tag";
 import { Status as LitmStatus } from "@/litm/status";
 import type { EntityPositionData, StateSetter } from "@/types";
-import { Item, Menu, Submenu, useContextMenu } from "@/components/ui/ContextMenu";
+import { Item, Submenu, ContextMenuWrapper, useContextMenu } from "@/components/ui/ContextMenu";
 import { UserContext } from "@/App";
 
 type GameTableProps = {
@@ -184,40 +184,51 @@ export function GameTable({
     },
   });
 
-  const { show } = useContextMenu({ id: "game-table-menu" });
-  function displayContextMenu(e: React.MouseEvent) {
-    e.stopPropagation();
-    show({
-      event: e,
-      id: "game-table-menu",
-    });
-  }
-  function handleItemClick(params: { props?: any; triggerEvent: MouseEvent }, tier?: number) {
+  function handleNewTagClick(params?: { props?: any; triggerEvent?: MouseEvent }) {
+    if (!params?.triggerEvent) return;
     createNewGameBoardTag({ x: params.triggerEvent.pageX, y: params.triggerEvent.pageY });
   }
-  function handleStatusClick(params: { props?: any; triggerEvent: MouseEvent }, tier: number) {
+  function handleNewStatusClick(params?: { props?: any; triggerEvent?: MouseEvent }, tier?: number) {
+    if (!params?.triggerEvent || !tier) return;
     createNewGameBoardStatus(
       { x: params.triggerEvent.pageX, y: params.triggerEvent.pageY },
       tier,
     );
   }
 
+  const gameTableMenu = (
+    <>
+      <Item onClick={handleNewTagClick}>
+        New tag
+      </Item>
+      <Submenu label="New status">
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <Item
+            key={n}
+            onClick={(params) => handleNewStatusClick(params, n)}
+          >{`Tier ${n}`}</Item>
+        ))}
+      </Submenu>
+    </>
+  );
+
   return (
     <>
       <DndContext onDragEnd={handleDragEnd} sensors={[mouseSensor]}>
-        <div
-          ref={setNodeRef}
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            border: "2px solid #68ff03ff",
-            borderRadius: "4px",
-            boxSizing: "border-box",
-            background: "rgba(37, 41, 58, 1)",
-            overflow: "hidden",
-          }}
-        >
+        <ContextMenuWrapper menu={gameTableMenu}>
+          <div
+            ref={setNodeRef}
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              border: "2px solid #68ff03ff",
+              borderRadius: "4px",
+              boxSizing: "border-box",
+              background: "rgba(37, 41, 58, 1)",
+              overflow: "hidden",
+            }}
+          >
           <TransformComponent wrapperStyle={{ height: "100%", width: "100%" }}>
             <div
               id="game-board"
@@ -231,7 +242,7 @@ export function GameTable({
                 backgroundSize: backgroundImage ? "cover" : "60px 60px",
                 backgroundPosition: "top left",
               }}
-              onContextMenu={displayContextMenu}
+
             >
               {gameTableEntities.map((entityData) => (
                 <div
@@ -265,22 +276,11 @@ export function GameTable({
               ))}
             </div>
           </TransformComponent>
-        </div>
+          </div>
+        </ContextMenuWrapper>
       </DndContext>
 
-      <Menu id="game-table-menu">
-        <Item onClick={handleItemClick}>
-          New tag
-        </Item>
-        <Submenu label="New status">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <Item
-              key={n}
-              onClick={(params) => handleStatusClick(params, n)}
-            >{`Tier ${n}`}</Item>
-          ))}
-        </Submenu>
-      </Menu>
+
     </>
   );
 }

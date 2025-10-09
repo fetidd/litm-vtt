@@ -1,47 +1,36 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-let activeMenu: {
-  id: string;
-  x: number;
-  y: number;
-  props?: any;
-} | null = null;
+interface ContextMenuContextType {
+  showMenu: (params: { event: React.MouseEvent; menu: ReactNode }) => void;
+}
 
-let setActiveMenuState: ((menu: typeof activeMenu) => void) | null = null;
+const ContextMenuContext = createContext<ContextMenuContextType | null>(null);
 
-const registeredMenus = new Map<string, ReactNode>();
+export function ContextMenuProvider({ children }: { children: ReactNode }) {
+  const [activeMenu, setActiveMenu] = useState<{
+    menu: ReactNode;
+    x: number;
+    y: number;
+  } | null>(null);
 
-function showContextMenu({ event, id, props }: { event: React.MouseEvent; id: string; props?: any }) {
-  event.preventDefault();
-  event.stopPropagation();
-  activeMenu = {
-    id,
-    x: event.clientX,
-    y: event.clientY,
-    props,
+  const showMenu = ({ event, menu }: { event: React.MouseEvent; menu: ReactNode }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveMenu({
+      menu,
+      x: event.clientX,
+      y: event.clientY,
+    });
   };
-  setActiveMenuState?.(activeMenu);
-}
 
-function hideContextMenu() {
-  activeMenu = null;
-  setActiveMenuState?.(null);
-}
-
-export function ContextMenuManager() {
-  const [currentMenu, setCurrentMenu] = useState<typeof activeMenu>(null);
-  
-  useEffect(() => {
-    setActiveMenuState = setCurrentMenu;
-    return () => { setActiveMenuState = null; };
-  }, []);
+  const hideMenu = () => setActiveMenu(null);
 
   useEffect(() => {
-    const handleClick = () => hideContextMenu();
-    const handleScroll = () => hideContextMenu();
-    
-    if (currentMenu) {
+    const handleClick = () => hideMenu();
+    const handleScroll = () => hideMenu();
+
+    if (activeMenu) {
       document.addEventListener("click", handleClick);
       document.addEventListener("scroll", handleScroll, true);
       return () => {
@@ -49,17 +38,21 @@ export function ContextMenuManager() {
         document.removeEventListener("scroll", handleScroll, true);
       };
     }
-  }, [currentMenu]);
+  }, [activeMenu]);
 
-  if (!currentMenu) return null;
-
-  return <ContextMenuPortal {...currentMenu} />;
+  return (
+    <ContextMenuContext.Provider value={{ showMenu }}>
+      {children}
+      {activeMenu && <ContextMenuPortal {...activeMenu} onClose={hideMenu} />}
+    </ContextMenuContext.Provider>
+  );
 }
 
-function ContextMenuPortal({ id, x, y }: {
-  id: string;
-  x: number;
-  y: number;
+function ContextMenuPortal({ menu, x, y, onClose }: { 
+  menu: ReactNode;
+  x: number; 
+  y: number; 
+  onClose: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x, y });
@@ -69,24 +62,21 @@ function ContextMenuPortal({ id, x, y }: {
       const rect = menuRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      
+
       let newX = x;
       let newY = y;
-      
+
       if (x + rect.width > viewportWidth) {
         newX = viewportWidth - rect.width - 8;
       }
-      
+
       if (y + rect.height > viewportHeight) {
         newY = viewportHeight - rect.height - 8;
       }
-      
+
       setPosition({ x: newX, y: newY });
     }
   }, [x, y]);
-
-  const menu = registeredMenus.get(id);
-  if (!menu) return null;
 
   return createPortal(
     <div
@@ -95,7 +85,7 @@ function ContextMenuPortal({ id, x, y }: {
         position: "fixed",
         left: position.x,
         top: position.y,
-        zIndex: 10000,
+        zIndex: 999999,
         background: "rgba(46, 43, 41, 0.95)",
         border: "1px solid #68ff03ff",
         borderRadius: "4px",
@@ -107,33 +97,41 @@ function ContextMenuPortal({ id, x, y }: {
     >
       {menu}
     </div>,
-    document.body
+    document.body,
   );
 }
 
-export function Menu({ id, children }: { id: string; children: ReactNode }) {
-  useEffect(() => {
-    registeredMenus.set(id, children);
-    return () => registeredMenus.delete(id);
-  }, [id, children]);
+export function ContextMenuWrapper({ children, menu }: { children: ReactNode; menu: ReactNode }) {
+  const context = useContext(ContextMenuContext);
   
-  return null;
+  const handleContextMenu = (e: React.MouseEvent) => {
+    context?.showMenu({ event: e, menu });
+  };
+
+  return (
+    <div onContextMenu={handleContextMenu} style={{ display: "contents" }}>
+      {children}
+    </div>
+  );
 }
 
-export function Item({ 
-  children, 
-  onClick, 
-  disabled = false 
-}: { 
-  children: ReactNode; 
+export function Item({
+  children,
+  onClick,
+  disabled = false,
+}: {
+  children: ReactNode;
   onClick?: (params?: { props?: any; triggerEvent?: MouseEvent }) => void;
   disabled?: boolean;
 }) {
+  const context = useContext(ContextMenuContext);
+  
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
     e.stopPropagation();
-    hideContextMenu();
-    if (typeof onClick === 'function') {
+    // Close context menu
+    document.dispatchEvent(new Event('click'));
+    if (typeof onClick === "function") {
       if (onClick.length === 0) {
         onClick();
       } else {
@@ -168,11 +166,11 @@ export function Item({
   );
 }
 
-export function Submenu({ 
-  label, 
-  children 
-}: { 
-  label: string; 
+export function Submenu({
+  label,
+  children,
+}: {
+  label: string;
   children: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -218,7 +216,7 @@ export function Submenu({
             minWidth: "150px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
             backdropFilter: "blur(8px)",
-            zIndex: 10001,
+            zIndex: 999999,
           }}
         >
           {children}
@@ -228,9 +226,13 @@ export function Submenu({
   );
 }
 
-export function useContextMenu({ id }: { id: string }) {
+export function useContextMenu() {
+  const context = useContext(ContextMenuContext);
+  
   return {
-    show: (params: { event: React.MouseEvent; id?: string; props?: any }) => 
-      showContextMenu({ ...params, id: params.id || id }),
+    show: (params: { event: React.MouseEvent; menu: ReactNode }) =>
+      context?.showMenu(params),
   };
 }
+
+

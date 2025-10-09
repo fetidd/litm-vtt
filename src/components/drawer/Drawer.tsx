@@ -71,8 +71,8 @@ export default function Drawer({
   const tabs =
     user?.role === "narrator"
       ? [
-          ...allHeroes.map((hero) => ({ id: hero.owner, label: hero.owner })),
-          { id: "challenges", label: "Challenges" },
+        { id: "challenges", label: "Challenges" },
+          ...allHeroes.map((hero) => ({ id: hero.owner, label: `${hero.name} (${hero.owner})` })),
         ]
       : [];
 

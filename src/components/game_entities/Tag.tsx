@@ -1,7 +1,7 @@
 import { useContext, useRef } from "react";
 import constant, { iconStyle } from "@/constants";
 import { Tag as LitmTag } from "@/litm/tag";
-import { Item, Menu, useContextMenu } from "@/components/ui/ContextMenu";
+import { Item, ContextMenuWrapper } from "@/components/ui/ContextMenu";
 import {
   FireIcon,
   MinusIcon,
@@ -47,18 +47,7 @@ export default function Tag({
     </span>
   );
 
-  const MENU_ID = `tag-menu-${tag.id}`;
-  const { show } = useContextMenu({ id: MENU_ID });
-  function displayContextMenu(e: React.MouseEvent) {
-    e.stopPropagation();
-    show({
-      event: e,
-      id: MENU_ID,
-      props: {
-        tag: tag,
-      },
-    });
-  }
+
 
   const handleEditClick = () => {
     if (tagRef.current && onShowEditDialog) {
@@ -70,53 +59,58 @@ export default function Tag({
   const user = useContext(UserContext);
   const isMine = user?.username == tag.owner || user?.role == "narrator";
 
+  const menu = (
+    <>
+      {isMine && tag.canBurn && !tag.isScratched && (
+        <Item onClick={() => addModifier(tag, "add", true)}>
+          <FireIcon style={iconStyle} />
+          Burn tag
+        </Item>
+      )}
+      {!tag.isScratched && (
+        <Item onClick={() => addModifier(tag, "add", false)}>
+          <PlusIcon style={iconStyle} />
+          Add tag
+        </Item>
+      )}
+      {!tag.isScratched && (
+        <Item onClick={() => addModifier(tag, "subtract", false)}>
+          <MinusIcon style={iconStyle} />
+          Subtract tag
+        </Item>
+      )}
+      {isMine && tag.canScratch && (
+        <Item
+          onClick={() =>
+            updateEntity(tag.id, (e) => {
+              (e as LitmTag).isScratched = !tag.isScratched;
+              return e;
+            })
+          }
+        >
+          <StrikethroughIcon style={iconStyle} />
+          {`${tag.isScratched ? "Uns" : "S"}cratch tag`}
+        </Item>
+      )}
+      {isMine && (
+        <>
+          <Item onClick={handleEditClick}>
+            <PencilIcon style={iconStyle} />Edit
+          </Item>
+          <Item onClick={() => removeEntity(tag)}>
+            <TrashIcon style={iconStyle} />Remove
+          </Item>
+        </>
+      )}
+    </>
+  );
+
   return (
-    <div ref={tagRef} style={style} onContextMenu={displayContextMenu}>
-      {tagObj}
-      <Menu id={MENU_ID}>
-        {isMine && tag.canBurn && !tag.isScratched && (
-          <Item onClick={() => addModifier(tag, "add", true)}>
-            <FireIcon style={iconStyle} />
-            Burn tag
-          </Item>
-        )}
-        {!tag.isScratched && (
-          <Item onClick={() => addModifier(tag, "add", false)}>
-            <PlusIcon style={iconStyle} />
-            Add tag
-          </Item>
-        )}
-        {!tag.isScratched && (
-          <Item onClick={() => addModifier(tag, "subtract", false)}>
-            <MinusIcon style={iconStyle} />
-            Subtract tag
-          </Item>
-        )}
-        {isMine && tag.canScratch && (
-          <Item
-            onClick={() =>
-              updateEntity(tag.id, (e) => {
-                (e as LitmTag).isScratched = !tag.isScratched;
-                return e;
-              })
-            }
-          >
-            <StrikethroughIcon style={iconStyle} />
-            {`${tag.isScratched ? "Uns" : "S"}cratch tag`}
-          </Item>
-        )}
-        {isMine && (
-          <>
-            <Item onClick={handleEditClick}>
-              <PencilIcon style={iconStyle} />Edit
-            </Item>
-            <Item onClick={() => removeEntity(tag)}>
-              <TrashIcon style={iconStyle} />Remove
-            </Item>
-          </>
-        )}
-      </Menu>
-    </div>
+    <ContextMenuWrapper menu={menu}>
+      <div ref={tagRef} style={style}>
+        {tagObj}
+      </div>
+    </ContextMenuWrapper>
   );
 }
 
