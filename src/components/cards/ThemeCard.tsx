@@ -10,8 +10,6 @@ import Quest from "@/components/hero_components/Quest";
 
 interface ThemeCardProps {
   theme: any;
-  editing: string | undefined;
-  setEditing: any;
   updateEntity: any;
   removeEntity: any;
   addModifier: any;
@@ -22,8 +20,6 @@ interface ThemeCardProps {
 
 export default function ThemeCard({
   theme,
-  editing,
-  setEditing,
   updateEntity,
   removeEntity,
   addModifier,
@@ -52,7 +48,6 @@ export default function ThemeCard({
         <div style={{ marginBottom: "4px" }}>
           <Tag
             tag={themeAsTag}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             isTheme={true}
             removeEntity={undefined}

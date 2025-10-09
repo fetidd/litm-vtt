@@ -1,5 +1,3 @@
-import { useState } from "react";
-import Button from "./Button";
 
 interface SpecialImprovementsProps {
   specialImprovements: string[];
@@ -10,7 +8,6 @@ export default function SpecialImprovements({
   specialImprovements,
   onUpdate,
 }: SpecialImprovementsProps) {
-  const [editing, setEditing] = useState(false);
   return (
     <>
       <h3

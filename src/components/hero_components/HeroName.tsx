@@ -9,15 +9,7 @@ export default function HeroName({
   name,
   onUpdate,
 }: HeroNameProps) {
-  const [editing, setEditing] = useState(false);
-  return editing ? (
-    <input
-      type="text"
-      value={name}
-      onChange={(e) => onUpdate(e.target.value)}
-      style={{ fontSize: "2rem", textAlign: "center", border: "none", background: "transparent" }}
-    />
-  ) : (
+  return (
     <div style={{ fontSize: "2rem", textAlign: "center" }}>
       {name}
     </div>

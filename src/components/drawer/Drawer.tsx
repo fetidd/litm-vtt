@@ -34,8 +34,6 @@ export default function Drawer({
     return "my-hero";
   });
 
-  const [editing, setEditing] = useState<string | undefined>(undefined);
-  
   function updateEntity(id: string, updater: (ent: Entity) => Entity) {
     const entity = entities.find(e => e.id === id);
     if (entity && (user?.role === "narrator" || entity.owner === user?.username)) {

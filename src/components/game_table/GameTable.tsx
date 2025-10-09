@@ -8,12 +8,6 @@ import {
 import type { DragEndEvent } from "@dnd-kit/core";
 import { DraggableEntity } from "./DraggableEntity";
 import { Entity, ModifierEntity } from "../../litm/entity";
-import {
-  CreateNewGameTableEntity,
-  DeleteGameTableEntity,
-  UpdateGameTableEntityDetails,
-  UpdateGameTableEntityPosition,
-} from "@/messaging/message";
 import type { WebSocketManager } from "@/websocket/WebSocketManager";
 import {
   TransformComponent,
@@ -60,7 +54,6 @@ export function GameTable({
     width: constant.GAME_TABLE_WIDTH,
     height: constant.GAME_TABLE_HEIGHT,
   });
-  const [editing, setEditing] = useState<string | undefined>(undefined);
   const user = useContext(UserContext);
 
   // WEBSOCKET MESSAGING
@@ -162,7 +155,6 @@ export function GameTable({
   const createNewGameBoardTag = (where: { x: number; y: number }) => {
     const tag = LitmTag.blank();
     tag.owner = user!.username;
-    setEditing(tag.id);
     where.x -= transformContext.transformState.positionX;
     where.y -= transformContext.transformState.positionY;
     setGameTableEntities((prev) => [...prev, { entity: tag, position: where }]);
@@ -176,7 +168,6 @@ export function GameTable({
     const status = LitmStatus.blank();
     status.owner = user!.username;
     status.addTier(tier);
-    setEditing(status.id);
     where.x -= transformContext.transformState.positionX;
     where.y -= transformContext.transformState.positionY;
     setGameTableEntities((prev) => [
@@ -280,9 +271,7 @@ export function GameTable({
                       maxX: tableSize.width,
                       maxY: tableSize.height,
                     }}
-                    editing={entityData.entity.id === editing}
                     updateEntity={updateEntity}
-                    setEditing={setEditing}
                     addModifier={addModifier}
                     removeEntity={removeEntityFromGameBoard}
                   />

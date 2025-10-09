@@ -35,9 +35,7 @@ type DraggableEntityProps = {
   ept: EntityPositionData;
   zIndex: number;
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
-  editing: boolean;
   updateEntity: (id: string, updater: (ent: Entity) => Entity) => void;
-  setEditing: (id: string | undefined) => void;
   addModifier: (
     entity: ModifierEntity,
     polarity: "add" | "subtract",
@@ -51,9 +49,7 @@ export function DraggableEntity({
   ept,
   zIndex,
   bounds,
-  editing,
   updateEntity,
-  setEditing,
   addModifier,
   removeEntity,
 }: DraggableEntityProps) {
@@ -123,8 +119,6 @@ export function DraggableEntity({
         {entity.entityType == "tag" && (
           <Tag
             tag={entity as LitmTag}
-            editing={editing}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             addModifier={addModifier}
             removeEntity={removeEntity}
@@ -137,8 +131,6 @@ export function DraggableEntity({
         {entity.entityType == "status" && (
           <Status
             status={entity as LitmStatus}
-            editing={editing}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             addModifier={addModifier}
             removeEntity={removeEntity}
@@ -151,8 +143,6 @@ export function DraggableEntity({
         {entity.entityType == "story-theme" && (
           <Tag
             tag={entity as LitmTag}
-            editing={editing}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             addModifier={addModifier}
             removeEntity={removeEntity}

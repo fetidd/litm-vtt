@@ -6,7 +6,6 @@ import { useState } from "react";
 interface TagAreaProps {
   otherTags: any[];
   weaknessTags: any[];
-  setEditing: any;
   updateEntity: any;
   addModifier: any;
   owner: string;
@@ -21,14 +20,12 @@ export default function TagArea({
   owner,
   onUpdate
 }: TagAreaProps) {
-  const [editing, setEditing] = useState(false);
   return (
     <>
       {otherTags.map((tag: any) => (
         <div key={tag.id} style={{ marginBottom: "4px", display: "flex", alignItems: "center", gap: "4px" }}>
           <Tag
             tag={tag}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             removeEntity={undefined}
             addModifier={addModifier}
@@ -40,7 +37,6 @@ export default function TagArea({
         <div key={tag.id} style={{ marginBottom: "4px", ...(index === 0 ? { marginTop: "8px" } : {}), display: "flex", alignItems: "center", gap: "4px" }}>
           <Tag
             tag={tag}
-            setEditing={setEditing}
             updateEntity={updateEntity}
             isWeakness={true}
             removeEntity={undefined}

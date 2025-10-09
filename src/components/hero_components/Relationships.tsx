@@ -17,7 +17,6 @@ export default function Relationships({
   owner,
   onUpdate,
 }: RelationshipsProps) {
-  const [editing, setEditing] = useState(undefined);
   return (
     <>
       <h3
@@ -46,58 +45,22 @@ export default function Relationships({
               style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "4px" }}
             >
               <div style={{ minWidth: "60px" }}>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => {
-                      const newRelationships = new Map(relationships);
-                      newRelationships.delete(name);
-                      newRelationships.set(e.target.value, tag);
-                      onUpdate(newRelationships);
-                    }}
-                    style={{ padding: "2px", width: "60px" }}
-                  />
-                ) : (
+                {(
                   <span style={{ fontSize: "0.9rem" }}>{name}</span>
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Tag
                   tag={tag}
-                  editing={editing == tag.id}
-                  setEditing={setEditing}
                   updateEntity={updateEntity}
                   removeEntity={undefined}
                   addModifier={addModifier}
                   onCard={true}
                 />
               </div>
-              {editing && (
-                <Button onClick={() => {
-                  const newRelationships = new Map(relationships);
-                  newRelationships.delete(name);
-                  onUpdate(newRelationships);
-                }}>×</Button>
-              )}
             </div>
           );
         })}
-        {editing && (
-          <Button
-            onClick={() => {
-              const newTag = new (Tag as any)();
-              newTag.name = "New Relationship";
-              newTag.owner = owner;
-              newTag.id = Math.random().toString();
-              const newRelationships = new Map(relationships);
-              newRelationships.set("New Person", newTag);
-              onUpdate(newRelationships);
-            }}
-          >
-            + Add Relationship
-          </Button>
-        )}
       </div>
     </>
   );
