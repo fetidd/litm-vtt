@@ -124,8 +124,6 @@ export function Item({
   onClick?: (params?: { props?: any; triggerEvent?: MouseEvent }) => void;
   disabled?: boolean;
 }) {
-  const context = useContext(ContextMenuContext);
-  
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
     e.stopPropagation();
