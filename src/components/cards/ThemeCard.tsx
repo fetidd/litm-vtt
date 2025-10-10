@@ -8,8 +8,11 @@ import TagArea from "@/components/hero_components/TagArea";
 import SpecialImprovements from "@/components/hero_components/SpecialImprovements";
 import Quest from "@/components/hero_components/Quest";
 import TagEditDialog from "@/components/ui/TagEditDialog";
+import ThemeEditDialog from "@/components/ui/ThemeEditDialog";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import type { ThemeType } from "@/litm/theme";
+import type { Might } from "@/litm/might";
 import type { SearchParams } from "@/types";
 import type { Entity } from "@/litm/entity";
 
@@ -36,6 +39,9 @@ export default function ThemeCard({
 }: ThemeCardProps) {
   const [editingTag, setEditingTag] = useState<{
     tag: any;
+    position: { x: number; y: number };
+  } | null>(null);
+  const [editingTheme, setEditingTheme] = useState<{
     position: { x: number; y: number };
   } | null>(null);
   const themeAsTag = LitmTag.deserialize(theme);
@@ -115,6 +121,7 @@ export default function ThemeCard({
         frontContent={frontContent}
         backContent={backContent}
         style={style}
+        onEditTheme={(position) => setEditingTheme({ position })}
       />
       {editingTag &&
         createPortal(
@@ -133,6 +140,27 @@ export default function ThemeCard({
             }}
             onCancel={() => setEditingTag(null)}
             isOwner={true}
+          />,
+          document.body,
+        )}
+      {editingTheme &&
+        createPortal(
+          <ThemeEditDialog
+            position={editingTheme.position}
+            initialThemeType={theme.type}
+            initialMight={theme.might}
+            onSave={(themeType: ThemeType, might: Might) => {
+              updateEntity(
+                { themeId: theme.id },
+                (themeEntity: any) => {
+                  themeEntity.type = themeType;
+                  themeEntity.might = might;
+                  return themeEntity;
+                }
+              );
+              setEditingTheme(null);
+            }}
+            onCancel={() => setEditingTheme(null)}
           />,
           document.body,
         )}

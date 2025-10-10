@@ -157,8 +157,10 @@ export default function Drawer({
               style={{
                 padding: "8px",
                 display: "flex",
+                flexWrap: "wrap",
                 gap: "8px",
                 alignItems: "flex-start",
+                alignContent: "flex-start",
               }}
             >
               {activeTab === "challenges" ? (

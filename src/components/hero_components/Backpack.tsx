@@ -3,6 +3,7 @@ import Button from "@/components/ui/Button";
 import TagEditDialog from "@/components/ui/TagEditDialog";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { Tag as TagEntity } from "@/litm/tag";
 
 interface BackpackProps {
   backpack: any[];
@@ -22,7 +23,15 @@ export default function Backpack({
   const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
   return (
     <>
-      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center" }}>Backpack</h3>
+      <h3 style={{ margin: "1px -12px", padding: "4px 12px", backgroundColor: "rgba(204, 165, 126, 0.43)", textAlign: "center", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        Backpack
+        <Button onClick={() => {
+          const newTag = TagEntity.blank();
+          newTag.name = "New Item";
+          newTag.owner = owner;
+          onUpdate([...backpack, newTag]);
+        }} style={{ fontSize: "12px", padding: "2px 6px" }}>+</Button>
+      </h3>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
         {backpack.map((tag) => (
           <div key={tag.id} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -36,6 +45,7 @@ export default function Backpack({
             />
           </div>
         ))}
+
       </div>
       {editingTag && createPortal(
         <TagEditDialog

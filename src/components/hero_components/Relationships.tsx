@@ -1,8 +1,12 @@
 import Tag from "@/components/game_entities/Tag";
 import Button from "@/components/ui/Button";
 import TagEditDialog from "@/components/ui/TagEditDialog";
+import { Item, ContextMenuWrapper } from "@/components/ui/ContextMenu";
+import { PencilIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { Tag as TagEntity } from "@/litm/tag";
+import { dialogStyles } from "@/styles/dialogStyles";
 
 interface RelationshipsProps {
   relationships: Map<string, any>;
@@ -20,17 +24,19 @@ export default function Relationships({
   onUpdate,
 }: RelationshipsProps) {
   const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
+  const [editingName, setEditingName] = useState<{ name: string; tag: any; position: { x: number; y: number } } | null>(null);
   return (
     <>
-      <h3
-        style={{
-          margin: "1px -12px",
-          padding: "4px 12px",
-          backgroundColor: "rgba(204, 165, 126, 0.43)",
-          textAlign: "center",
-        }}
-      >
+      <h3 style={dialogStyles.sectionHeader}>
         Fellowship Relationship
+        <Button onClick={() => {
+          const newTag = TagEntity.blank();
+          newTag.name = "New Relationship";
+          newTag.owner = owner;
+          const newRelationships = new Map(relationships);
+          newRelationships.set("New Name", newTag);
+          onUpdate(newRelationships);
+        }} style={{ fontSize: "12px", padding: "2px 6px" }}>+</Button>
       </h3>
       <div
         style={{
@@ -48,9 +54,20 @@ export default function Relationships({
               style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "4px" }}
             >
               <div style={{ minWidth: "60px" }}>
-                {(
-                  <span style={{ fontSize: "0.9rem" }}>{name}</span>
-                )}
+                <ContextMenuWrapper 
+                  menu={
+                    <Item onClick={(params) => {
+                      const x = params?.triggerEvent?.clientX || 200;
+                      const y = params?.triggerEvent?.clientY || 100;
+                      setEditingName({ name, tag, position: { x: x + 8, y } });
+                    }}>
+                      <PencilIcon style={{ width: "16px", height: "16px", marginRight: "8px" }} />
+                      Edit Name
+                    </Item>
+                  }
+                >
+                  <span style={{ fontSize: "0.9rem", cursor: "pointer" }}>{name}</span>
+                </ContextMenuWrapper>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Tag
@@ -65,6 +82,7 @@ export default function Relationships({
             </div>
           );
         })}
+
       </div>
       {editingTag && createPortal(
         <TagEditDialog
@@ -78,6 +96,25 @@ export default function Relationships({
             setEditingTag(null);
           }}
           onCancel={() => setEditingTag(null)}
+          isOwner={true}
+        />,
+        document.body,
+      )}
+      {editingName && createPortal(
+        <TagEditDialog
+          tag={{ name: editingName.name }}
+          position={editingName.position}
+          onSave={(newName, isPublic) => {
+            const newRelationships = new Map(relationships);
+            const tag = newRelationships.get(editingName.name);
+            if (tag) {
+              newRelationships.delete(editingName.name);
+              newRelationships.set(newName, tag);
+              onUpdate(newRelationships);
+            }
+            setEditingName(null);
+          }}
+          onCancel={() => setEditingName(null)}
           isOwner={true}
         />,
         document.body,

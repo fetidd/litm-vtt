@@ -1,6 +1,8 @@
 import { CARD_STYLE } from "@/constants";
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import Button from "../ui/Button";
+import { Item, ContextMenuWrapper } from "@/components/ui/ContextMenu";
+import { PencilIcon } from "@heroicons/react/24/solid";
 
 interface BaseCardProps {
   title: string;
@@ -9,6 +11,7 @@ interface BaseCardProps {
   frontContent: ReactNode;
   backContent: ReactNode;
   style?: React.CSSProperties;
+  onEditTheme?: (position: { x: number; y: number }) => void;
 }
 
 export default function BaseCard({
@@ -18,6 +21,7 @@ export default function BaseCard({
   frontContent,
   backContent,
   style = {},
+  onEditTheme,
 }: BaseCardProps) {
   const [side, setSide] = useState<"front" | "back">("front");
   const [isFlipping, setIsFlipping] = useState(false);
@@ -60,27 +64,40 @@ export default function BaseCard({
       transform: isFlipping ? 'rotateY(90deg)' : 'rotateY(0deg)',
       transition: 'transform 0.1s linear'
     }}>
-      <div
-        style={{
-          display: "flex",
-          height: "40px",
-          flexShrink: 0,
-          background: headerColor,
-          color: "white",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 8px",
-          border: "0 none",
-          borderRadius: "4px",
-        }}
+      <ContextMenuWrapper
+        menu={onEditTheme ? (
+          <Item onClick={(params) => {
+            const x = params?.triggerEvent?.clientX || 200;
+            const y = params?.triggerEvent?.clientY || 100;
+            onEditTheme({ x: x + 8, y });
+          }}>
+            <PencilIcon style={{ width: "16px", height: "16px", marginRight: "8px" }} />
+            Edit Theme
+          </Item>
+        ) : undefined}
       >
-        <span style={{ fontSize: "1.2rem" }}>{title}</span>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Button onClick={handleFlip} variant="header">
-            Flip
-          </Button>
+        <div
+          style={{
+            display: "flex",
+            height: "40px",
+            flexShrink: 0,
+            background: headerColor,
+            color: "white",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "0 8px",
+            border: "0 none",
+            borderRadius: "4px",
+          }}
+        >
+          <span style={{ fontSize: "1.2rem" }}>{title}</span>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Button onClick={handleFlip} variant="header">
+              Flip
+            </Button>
+          </div>
         </div>
-      </div>
+      </ContextMenuWrapper>
       {side === "front" && !isFlipping && <div style={sideStyle}>{frontContent}</div>}
       {side === "back" && !isFlipping && <div style={sideStyle}>{backContent}</div>}
       {!cardHeight && (
