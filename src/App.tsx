@@ -211,12 +211,23 @@ export function App() {
     const handleMouseMove = (e: MouseEvent) => {
       const deltaY = startY - e.clientY;
       const maxHeight = window.innerHeight * 0.75;
-      const newHeight = Math.max(
-        100,
-        Math.min(maxHeight, startHeight + deltaY),
-      );
-      setDrawerHeight(newHeight);
-      localStorage.setItem("drawerHeight", newHeight.toString());
+      const calculatedHeight = startHeight + deltaY;
+      
+      if (calculatedHeight < 50) {
+        // Save current height and enter closed state
+        if (drawerHeight > 0) {
+          setPreviousDrawerHeight(drawerHeight);
+          localStorage.setItem("previousDrawerHeight", drawerHeight.toString());
+        }
+        setDrawerHeight(0);
+        localStorage.setItem("drawerHeight", "0");
+        setDrawerCollapsed(true);
+      } else {
+        const newHeight = Math.max(50, Math.min(maxHeight, calculatedHeight));
+        setDrawerHeight(newHeight);
+        localStorage.setItem("drawerHeight", newHeight.toString());
+        setDrawerCollapsed(false);
+      }
     };
 
     const handleMouseUp = () => {
