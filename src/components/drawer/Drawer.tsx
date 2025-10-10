@@ -1,18 +1,20 @@
 import { SessionContext, UserContext } from "@/App";
 import type { Challenge } from "@/litm/challenge";
 import type { Entity, ModifierEntity } from "@/litm/entity";
-import { type Hero as LitmHero } from "@/litm/hero";
+import { Hero, type Hero as LitmHero } from "@/litm/hero";
 import { useContext, useState } from "react";
 import HeroCard from "@/components/cards/HeroCard";
 import "../../../assets/scrollbar.css";
 import ThemeCard from "@/components/cards/HeroThemeCard";
-import { HeroTheme as LitmTheme } from "@/litm/theme";
+import { HeroTheme, HeroTheme as LitmTheme } from "@/litm/theme";
 import { Tag } from "@/litm/tag";
 import FellowshipThemeCard from "@/components/cards/FellowshipThemeCard";
 import type { WebSocketManager } from "@/websocket/WebSocketManager";
 import ScrollContainer from "@/components/ui/ScrollContainer";
 import Tabs from "@/components/ui/Tabs";
-import type { StateSetter } from "@/types";
+import type { SearchParams, StateSetter } from "@/types";
+import constants from "@/constants";
+import { hero } from "@/server/heroes";
 
 export default function Drawer({
   websocket,
@@ -39,24 +41,52 @@ export default function Drawer({
     return "my-hero";
   });
 
-  function updateEntity(id: string, updater: (ent: Entity) => Entity) {
-    const entity = entities.find((e) => e.id === id);
+  const findEntityWithSearchParams: (params: SearchParams) => Entity = (
+    params,
+  ) => {
+    console.log(`Attempting to update entity ${JSON.stringify(params)}`);
+    try {
+      let toUpdate = entities.find(e => e.id === params.heroId!) as any;
+      if (params.themeType) {
+        toUpdate = toUpdate.themes.find((t: any) => t.id === params.themeId!) as any;
+      }
+      if (params.entityType) {
+        switch (params.entityType) {
+          case "main-tag":
+            break;
+          case "other-tag":
+            toUpdate = toUpdate.otherTags.find((tag: Tag) => tag.id === params.entityId);
+            break;
+          case "weakness-tag":
+            toUpdate = toUpdate.weaknessTags.find((tag: Tag) => tag.id === params.entityId);
+            break;
+        }
+      }
+      console.log(`Found entity: ${JSON.stringify(toUpdate)}`);
+      return toUpdate;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  function updateEntity(
+    params: SearchParams,
+    updater: (ent: Entity) => Entity,
+  ) {
+    const entity = findEntityWithSearchParams(params);
     if (
       entity &&
       (user?.role === "narrator" || entity.owner === user?.username)
     ) {
       const updated = updater(entity);
       setDrawerEntities((prev) =>
-        prev.map((entity) =>
-          entity.id === updated.id ? updated : entity,
-        ),
+        prev.map((entity) => (entity.id === updated.id ? updated : entity)),
       );
       // Send update to server if websocket is available
       if (websocket) {
         websocket.updateDrawerEntity(updated, session!);
       }
-    } else {
-      throw new Error("Entity not found or user does not have permission to edit");
     }
   }
 
@@ -73,8 +103,11 @@ export default function Drawer({
   const tabs =
     user?.role === "narrator"
       ? [
-        { id: "challenges", label: "Challenges" },
-          ...allHeroes.map((hero) => ({ id: hero.owner, label: `${hero.name} (${hero.owner})` })),
+          { id: "challenges", label: "Challenges" },
+          ...allHeroes.map((hero) => ({
+            id: hero.owner,
+            label: `${hero.name} (${hero.owner})`,
+          })),
         ]
       : [];
 
@@ -137,7 +170,12 @@ export default function Drawer({
                 <>
                   <HeroCard
                     hero={activeHero}
-                    updateEntity={updateEntity}
+                    updateEntity={(
+                        params: SearchParams,
+                        updater: (ent: any) => any,
+                      ) => {
+                        updateEntity({ ...params, heroId: hero.id }, updater);
+                      }}
                     addModifier={addModifier}
                     removeEntity={undefined}
                   />
@@ -145,17 +183,29 @@ export default function Drawer({
                     <ThemeCard
                       key={theme.id}
                       theme={theme as LitmTheme}
-                      updateEntity={updateEntity}
+                      updateEntity={(
+                        params: SearchParams,
+                        updater: (ent: Entity) => Entity,
+                      ) => {
+                        updateEntity({ ...params, heroId: hero.id }, updater);
+                      }}
                       addModifier={addModifier}
                       removeEntity={undefined}
+                      parentId={activeHero.id}
                     />
                   ))}
                   {activeHero.fellowship && (
                     <FellowshipThemeCard
                       theme={activeHero.fellowship}
-                      updateEntity={updateEntity}
+                      updateEntity={(
+                        params: SearchParams,
+                        updater: (ent: Entity) => Entity,
+                      ) => {
+                        updateEntity({ ...params, heroId: hero.id }, updater);
+                      }}
                       addModifier={addModifier}
                       removeEntity={undefined}
+                      parentId={activeHero.id}
                     />
                   )}
                 </>

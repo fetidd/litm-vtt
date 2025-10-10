@@ -62,7 +62,6 @@ export function App() {
     EntityPositionData[]
   >([]);
   const [drawerEntities, setDrawerEntities] = useState<Entity[]>([]);
-  console.log(drawerEntities.map((e) => e.entityType));
 
   const [drawerLoaded, setDrawerLoaded] = useState(false);
   const [selectedModifiers, setSelectedModifiers] = useState<Modifier[]>([]);

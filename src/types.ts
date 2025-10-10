@@ -1,4 +1,4 @@
-import type { Entity } from "./litm/entity";
+import type { Entity, EntityType } from "./litm/entity";
 
 export type EntityPositionData = {
   entity: Entity;
@@ -18,4 +18,27 @@ export type RawHero = {
   fellowship?: object;
   relationships: object[];
   owner: string;
+};
+
+export type SearchParams = {
+  entityId: string;
+  entityType:
+    | "main-tag"
+    | "other-tag"
+    | "weakness-tag"
+    | "hero"
+    | "quest"
+    | "hero-name"
+    | "milestone"
+    | "abandon"
+    | "improve"
+    | "backpack-tag"
+    | "relationship"
+    | "promise"
+    | "quintessence"
+    | "note"
+    | "special-improvement";
+  themeId?: string;
+  themeType?: "fellowship" | "hero" | "story" | undefined
+  heroId?: string;
 };

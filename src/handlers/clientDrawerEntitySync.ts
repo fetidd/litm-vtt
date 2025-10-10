@@ -7,6 +7,5 @@ export function handleClientDrawerEntitySync(
   setDrawerEntities: StateSetter<Entity[]>,
 ) {
   const des = entities.map((entity) => deserializeRawEntity(entity));
-  console.log(des);
   setDrawerEntities(() => des);
 }

@@ -1,6 +1,5 @@
 import { Hero as LitmHero } from "@/litm/hero";
 import BaseCard from "./BaseCard";
-import Button from "@/components/ui/Button";
 import Promise from "@/components/hero_components/Promise";
 import Quintessences from "@/components/hero_components/Quintessences";
 import Backpack from "@/components/hero_components/Backpack";

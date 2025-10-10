@@ -10,6 +10,8 @@ import Quest from "@/components/hero_components/Quest";
 import TagEditDialog from "@/components/ui/TagEditDialog";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import type { SearchParams } from "@/types";
+import type { Entity } from "@/litm/entity";
 
 interface ThemeCardProps {
   theme: any;
@@ -19,6 +21,7 @@ interface ThemeCardProps {
   title?: string;
   headerColor?: string;
   style?: React.CSSProperties;
+  parentId?: string;
 }
 
 export default function ThemeCard({
@@ -29,19 +32,25 @@ export default function ThemeCard({
   title,
   headerColor,
   style = {},
+  parentId = undefined,
 }: ThemeCardProps) {
-  const [editingTag, setEditingTag] = useState<{ tag: any; position: { x: number; y: number } } | null>(null);
+  const [editingTag, setEditingTag] = useState<{
+    tag: any;
+    position: { x: number; y: number };
+  } | null>(null);
   const themeAsTag = LitmTag.deserialize(theme);
-  
+
   const getTitle = () => {
     if (title) return title;
     return theme.type ? theme.type.toUpperCase() : "FELLOWSHIP";
   };
-  
+
   const getHeaderColor = () => {
     if (headerColor) return headerColor;
     if (theme.might && theme.might in constants.MIGHT_COLORS) {
-      return constants.MIGHT_COLORS[theme.might as keyof typeof constants.MIGHT_COLORS];
+      return constants.MIGHT_COLORS[
+        theme.might as keyof typeof constants.MIGHT_COLORS
+      ];
     }
     return "rgba(97, 61, 46, 1)";
   };
@@ -57,16 +66,21 @@ export default function ThemeCard({
             removeEntity={undefined}
             addModifier={addModifier}
             onCard={true}
-            onShowEditDialog={(position) => setEditingTag({ tag: themeAsTag, position })}
+            onShowEditDialog={(position) =>
+              setEditingTag({ tag: themeAsTag, position })
+            }
           />
         </div>
         <TagArea
           otherTags={theme.otherTags}
           weaknessTags={theme.weaknessTags}
-          updateEntity={updateEntity}
+          updateEntity={(
+            params: SearchParams,
+            updater: (ent: Entity) => Entity,
+          ) => {
+            updateEntity({ ...params, themeId: theme.id }, updater);
+          }}
           addModifier={addModifier}
-          owner={theme.owner}
-          onUpdate={(otherTags, weaknessTags) => updateEntity({ ...theme, otherTags, weaknessTags })}
         />
       </div>
       <Quest
@@ -86,7 +100,9 @@ export default function ThemeCard({
   const backContent = (
     <SpecialImprovements
       specialImprovements={theme.specialImprovements}
-      onUpdate={(specialImprovements) => updateEntity({ ...theme, specialImprovements })}
+      onUpdate={(specialImprovements) =>
+        updateEntity({ ...theme, specialImprovements })
+      }
     />
   );
 
@@ -100,22 +116,26 @@ export default function ThemeCard({
         backContent={backContent}
         style={style}
       />
-      {editingTag && createPortal(
-        <TagEditDialog
-          tag={editingTag.tag}
-          position={editingTag.position}
-          onSave={(name, isPublic) => {
-            updateEntity(editingTag.tag.id, (tag: any) => {
-              tag.name = name;
-              return tag;
-            });
-            setEditingTag(null);
-          }}
-          onCancel={() => setEditingTag(null)}
-          isOwner={true}
-        />,
-        document.body,
-      )}
+      {editingTag &&
+        createPortal(
+          <TagEditDialog
+            tag={editingTag.tag}
+            position={editingTag.position}
+            onSave={(name, isPublic) => {
+              updateEntity(
+                { themeId: theme.id, themeType: "hero" },
+                (tag: LitmTag) => {
+                  tag.name = name;
+                  return tag;
+                },
+              );
+              setEditingTag(null);
+            }}
+            onCancel={() => setEditingTag(null)}
+            isOwner={true}
+          />,
+          document.body,
+        )}
     </>
   );
 }
