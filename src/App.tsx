@@ -81,6 +81,22 @@ export function App() {
     const saved = localStorage.getItem("rollWidgetWidth");
     return saved ? parseInt(saved) : 300;
   });
+  const [drawerCollapsed, setDrawerCollapsed] = useState(() => {
+    const saved = localStorage.getItem("drawerHeight");
+    return saved ? parseInt(saved) === 0 : false;
+  });
+  const [previousDrawerHeight, setPreviousDrawerHeight] = useState(() => {
+    const saved = localStorage.getItem("previousDrawerHeight");
+    return saved ? parseInt(saved) : 200;
+  });
+  const [rollWidgetCollapsed, setRollWidgetCollapsed] = useState(() => {
+    const saved = localStorage.getItem("rollWidgetWidth");
+    return saved ? parseInt(saved) === 0 : false;
+  });
+  const [previousRollWidgetWidth, setPreviousRollWidgetWidth] = useState(() => {
+    const saved = localStorage.getItem("previousRollWidgetWidth");
+    return saved ? parseInt(saved) : 300;
+  });
 
   // WEBSOCKET HANDLING - only when user is logged in
   useEffect(() => {
@@ -141,6 +157,34 @@ export function App() {
       manager.disconnect();
     };
   }, [session, user]);
+
+  // KEYBOARD SHORTCUTS
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        
+        if (drawerCollapsed) {
+          // Restore to previous height
+          setDrawerHeight(previousDrawerHeight);
+          localStorage.setItem("drawerHeight", previousDrawerHeight.toString());
+          setDrawerCollapsed(false);
+        } else {
+          // Save current height (only if it's not 0) and collapse to 0
+          if (drawerHeight > 0) {
+            setPreviousDrawerHeight(drawerHeight);
+            localStorage.setItem("previousDrawerHeight", drawerHeight.toString());
+          }
+          setDrawerHeight(0);
+          localStorage.setItem("drawerHeight", "0");
+          setDrawerCollapsed(true);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [drawerCollapsed, drawerHeight, previousDrawerHeight]);
 
   const style: React.CSSProperties = {
     display: "grid",
